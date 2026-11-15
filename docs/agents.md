@@ -6,10 +6,6 @@ Canonical agent definitions live in `agents/*.md`.
 
 Investigates failures and traces symptoms to root cause before recommending smallest fix.
 
-## Frontend Validator
-
-Validates changed UI behavior in browser, preferably using Playwright CLI.
-
 ## Security Reviewer
 
 Reviews changed attack surface for concrete security vulnerabilities and trust-boundary problems.
@@ -28,7 +24,7 @@ Keeps tracker issues in sync with the code: reads issues, compares them with cod
 
 ## QA Assistant
 
-Verifies an issue's change in the browser, by tests, and by code. Reports Done / Missing / Differs / Not covered, posts the evidence comment, ticks verified criteria, and sets the confirmed status.
+Verifies an issue's change, or a changed UI behavior from a brief, in the browser, by tests, and by code. Reports Done / Missing / Differs / Not covered, posts the evidence comment, ticks verified criteria, and sets the confirmed status.
 
 Both read `skills/issue-comment/SKILL.md` (and `skills/create-issue/SKILL.md` for the project manager) by path, because those skills set `disable-model-invocation`.
 
@@ -45,12 +41,4 @@ The generated TOML uses `codex-sandbox` from the frontmatter and defaults to `sa
 
 ## Model settings
 
-Taken from each file's frontmatter (`model`/`effort` for Claude, `codex-*` for Codex):
-
-* `builder`: Claude `haiku`/high; Codex `gpt-6.1-terra`/high, `workspace-write`; tools limited to Read, Edit, Write, Bash, Skill.
-* `debugger`: Claude `opus`/medium; Codex `gpt-6.1-sol`/high, read-only; Edit, Write and NotebookEdit disallowed.
-* `frontend-validator`: Claude `haiku`/high; Codex `gpt-6.1-terra`/high, `workspace-write` (for screenshots); Edit, Write and NotebookEdit disallowed.
-* `security-reviewer`: Claude `opus`/medium; Codex `gpt-6.1-sol`/high, read-only; Edit, Write and NotebookEdit disallowed.
-* `verifier`: Claude `opus`/medium; Codex `gpt-6.1-sol`/high, `workspace-write`.
-* `project-manager`: Claude `haiku`/high; Codex `gpt-6.1-terra`/high, read-only; Edit, Write and NotebookEdit disallowed.
-* `qa-assistant`: Claude `haiku`/high; Codex `gpt-6.1-terra`/high, `workspace-write` (for screenshots); Edit, Write and NotebookEdit disallowed.
+Model, effort, tools, and Codex sandbox are set in each file's frontmatter (`model`/`effort` for Claude, `codex-*` for Codex).

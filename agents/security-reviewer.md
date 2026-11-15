@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 description: Reviews security-sensitive changes for concrete exploitable vulnerabilities and trust-boundary problems.
-disallowedTools: Edit, Write, NotebookEdit
+tools: Read, Bash, Skill
 model: opus
 effort: medium
 codex-model: gpt-6.1-sol

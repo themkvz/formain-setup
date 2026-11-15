@@ -56,6 +56,13 @@ Use other models (`sonnet`, `fable`, `astra`) or efforts only when the user asks
 
 Once what to change is decided (approved spec, known-cause fix, mechanical edit) and it spans more than a few lines or one file, hand it to the `builder` agent instead of editing inline: name the files and the exact change, not the whole conversation.
 
+Other agents, when available:
+
+- Bug, error, or failing test with an unknown cause: `debugger`.
+- Change to auth, permissions, input handling, secrets, or file access: `security-reviewer`.
+- Tracker issues to bring in line with the code: `project-manager`.
+- Check that an issue's change or a UI change really works: `qa-assistant`.
+
 Brief subagents with only the context they need; no overlapping file ownership. They return concise results with evidence; the main agent integrates and verifies them.
 
 ## Feature workflow

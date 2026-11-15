@@ -1,7 +1,7 @@
 ---
 name: debugger
 description: Investigates bugs, errors, failing tests, and unexpected behavior. Finds root cause before recommending smallest fix.
-disallowedTools: Edit, Write, NotebookEdit
+tools: Read, Bash, Skill
 model: opus
 effort: medium
 codex-model: gpt-6.1-sol

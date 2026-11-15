@@ -32,7 +32,7 @@ A last check before release. Find what will hurt users, leak data, or wake someo
 4. **Run checks.** Use the project's scripts and package manager: lint, type check, tests, production build (note bundle or binary size), dependency audit. If a check cannot run, record it as Not verified with the error.
 5. **Read the risky core first:** auth, payments, data writes, public inputs, file uploads, the first screen, and the main user flow. Then walk the reference checklists. Mark each item that applies.
 6. **Live checks** (optional), only on a URL the user gave or a local server. Reuse a running server; stop any server you started.
-7. **Go deeper when needed** (optional). If available: the `security-reviewer` agent for auth, payments, or sensitive data; `frontend-validator` or `x-playwright-cli` to click through the main UI flow.
+7. **Go deeper when needed** (optional). If available: the `security-reviewer` agent for auth, payments, or sensitive data; the `qa-assistant` agent or `x-playwright-cli` to click through the main UI flow.
 8. **Report** in the format below. Then offer to fix the Blockers and High findings. Do not fix anything without approval.
 
 ## Severity
