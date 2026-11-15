@@ -22,6 +22,16 @@ Implements a decided change (approved spec, known-cause fix, mechanical multi-fi
 
 Runs the feature, adds edge-case tests at medium effort, reports problems without changing code.
 
+## Project Manager
+
+Keeps tracker issues in sync with the code: reads issues, compares them with code and git history, posts updates, ticks criteria that have evidence, sets status (Done only on request), creates issues on request. Does not test behavior.
+
+## QA Assistant
+
+Verifies an issue's change in the browser, by tests, and by code. Reports Done / Missing / Differs / Not covered, posts the evidence comment, ticks verified criteria, and sets the confirmed status.
+
+Both read `skills/issue-comment/SKILL.md` (and `skills/create-issue/SKILL.md` for the project manager) by path, because those skills set `disable-model-invocation`.
+
 Claude and Antigravity consume shared Markdown agent definitions directly.
 
 Codex requires TOML definitions, generated from every `agents/*.md` (description and `codex-*` keys come from the frontmatter) with:
@@ -42,3 +52,5 @@ Taken from each file's frontmatter (`model`/`effort` for Claude, `codex-*` for C
 * `frontend-validator`: Claude `haiku`/high; Codex `gpt-6.1-terra`/high, `workspace-write` (for screenshots); Edit, Write and NotebookEdit disallowed.
 * `security-reviewer`: Claude `opus`/medium; Codex `gpt-6.1-sol`/high, read-only; Edit, Write and NotebookEdit disallowed.
 * `verifier`: Claude `opus`/medium; Codex `gpt-6.1-sol`/high, `workspace-write`.
+* `project-manager`: Claude `haiku`/high; Codex `gpt-6.1-terra`/high, read-only; Edit, Write and NotebookEdit disallowed.
+* `qa-assistant`: Claude `haiku`/high; Codex `gpt-6.1-terra`/high, `workspace-write` (for screenshots); Edit, Write and NotebookEdit disallowed.
