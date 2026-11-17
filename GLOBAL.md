@@ -39,7 +39,7 @@
 - Confirm before destructive or externally visible actions: deleting files you didn't create in this task, rewriting git history, force-pushing, migrations, deployments, PRs, messages, or other shared-system changes.
 - Never discard uncommitted changes you didn't make (`reset --hard`, `checkout .`, `stash drop`, `clean -f`).
 - Never print, log, commit, or send secrets (`.env` values, tokens, keys) to external services.
-- Commit only when asked or when the established workflow requires it.
+- Never commit or push changes without the user's explicit approval for the specific action. Task completion, workflow rules, and prior approvals for other actions do not count as approval.
 - Processes: reuse a running server, browser, or watcher instead of starting another. Prefer commands that exit; no watch mode unless the task needs it. Stop long-running processes you started once they're no longer needed.
 - Never run broad kills (`pkill node`). Kill only processes you started; ask before stopping any other.
 
