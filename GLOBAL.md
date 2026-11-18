@@ -37,6 +37,7 @@
 ## Safety
 
 - Confirm before destructive or externally visible actions: deleting files you didn't create in this task, rewriting git history, force-pushing, migrations, deployments, PRs, messages, or other shared-system changes.
+- After the user approves posting a comment on an issue tracker, prefer following `~/.ai/skills/issue-comment/SKILL.md`.
 - Never discard uncommitted changes you didn't make (`reset --hard`, `checkout .`, `stash drop`, `clean -f`).
 - Never print, log, commit, or send secrets (`.env` values, tokens, keys) to external services.
 - Never commit or push changes without the user's explicit approval for the specific action. Task completion, workflow rules, and prior approvals for other actions do not count as approval.
