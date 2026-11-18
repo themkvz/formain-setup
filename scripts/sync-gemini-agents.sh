@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SRC="$HOME/.ai/agents"
+DST="$HOME/.gemini/config/agents"
+
+mkdir -p "$DST"
+
+sync_agent() {
+  local source="$1"
+  local name target
+  name="$(basename "$source" .md)"
+  target="$DST/$name.md"
+
+  if [[ -L "$target" ]]; then
+    rm "$target"
+  fi
+
+  awk -v fallback_name="$name" '
+    function has_token(list, tok,    n, i, arr) {
+      n = split(list, arr, /,[[:space:]]*/)
+      for (i = 1; i <= n; i++) {
+        if (arr[i] == tok) return 1
+      }
+      return 0
+    }
+    function add_tool(t) {
+      if (!seen[t]++) mapped = (mapped ? mapped ", " : "") t
+    }
+    NR == 1 && $0 == "---" { fm = 1; next }
+    fm && $0 == "---" {
+      fm = 0
+      done = 1
+      if (agent_name == "") agent_name = fallback_name
+      gsub(/\\/, "\\\\", desc)
+      gsub(/"/, "\\\"", desc)
+
+      if (tools != "") {
+        n = split(tools, arr, /,[[:space:]]*/)
+        for (i = 1; i <= n; i++) {
+          t = arr[i]
+          if (t == "Read" || t == "Glob" || t == "Grep") add_tool("read_file")
+          else if (t == "Edit" || t == "MultiEdit") add_tool("edit_file")
+          else if (t == "Write") add_tool("write_file")
+          else if (t == "Bash") { add_tool("run_command"); add_tool("manage_task") }
+          else if (t == "WebSearch" || t == "WebFetch") add_tool("search_web")
+        }
+      } else {
+        add_tool("read_file")
+        if (!has_token(disallowed, "Edit") && !has_token(disallowed, "MultiEdit")) add_tool("edit_file")
+        if (!has_token(disallowed, "Write")) add_tool("write_file")
+        add_tool("run_command")
+        add_tool("manage_task")
+        add_tool("search_web")
+      }
+
+      print "---"
+      print "name: " agent_name
+      print "description: \"" desc "\""
+      print "subagent: true"
+      print "mainAgent: false"
+      if (gmodel != "") print "model: " gmodel
+      print "tools: [" mapped "]"
+      print "---"
+      next
+    }
+    fm {
+      if ($0 ~ /^name:[[:space:]]*/) { sub(/^name:[[:space:]]*/, ""); agent_name = $0 }
+      else if ($0 ~ /^description:[[:space:]]*/) { sub(/^description:[[:space:]]*/, ""); desc = $0 }
+      else if ($0 ~ /^tools:[[:space:]]*/) { sub(/^tools:[[:space:]]*/, ""); tools = $0 }
+      else if ($0 ~ /^disallowedTools:[[:space:]]*/) { sub(/^disallowedTools:[[:space:]]*/, ""); disallowed = $0 }
+      else if ($0 ~ /^gemini-model:[[:space:]]*/) { sub(/^gemini-model:[[:space:]]*/, ""); gmodel = $0 }
+      next
+    }
+    done { print }
+  ' "$source" > "$target"
+
+  echo "Synced: $target"
+}
+
+for source in "$SRC"/*.md; do
+  sync_agent "$source"
+done
+
+echo "Gemini agents synced."

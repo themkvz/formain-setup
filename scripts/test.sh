@@ -53,7 +53,7 @@ pass "existing file backed up"
 
 for skill in "$TEST_HOME"/.ai/skills/*/; do
   name="$(basename "$skill")"
-  for dir in .claude/skills .agents/skills .agent/skills; do
+  for dir in .claude/skills .gemini/config/skills .agents/skills .agent/skills; do
     assert_link "$TEST_HOME/$dir/x-$name" "$TEST_HOME/.ai/skills/$name"
   done
 done
@@ -62,10 +62,10 @@ pass "skill links"
 for agent in "$TEST_HOME"/.ai/agents/*.md; do
   name="$(basename "$agent")"
   assert_link "$TEST_HOME/.claude/agents/$name" "$agent"
-  assert_link "$TEST_HOME/.gemini/config/agents/$name" "$agent"
+  [[ -s "$TEST_HOME/.gemini/config/agents/$name" && ! -L "$TEST_HOME/.gemini/config/agents/$name" ]] || die "Missing Gemini agent: $name"
   [[ -s "$TEST_HOME/.codex/agents/${name%.md}.toml" ]] || die "Missing Codex agent: ${name%.md}.toml"
 done
-pass "agent links and Codex agents"
+pass "agent links, Gemini agents, and Codex agents"
 
 echo "==> Bootstrap is safe to run twice"
 

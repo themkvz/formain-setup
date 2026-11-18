@@ -28,7 +28,13 @@ Verifies an issue's change, or a changed UI behavior from a brief, in the browse
 
 Both read `skills/issue-comment/SKILL.md` (and `skills/create-issue/SKILL.md` for the project manager) by path, because those skills set `disable-model-invocation`.
 
-Claude and Antigravity consume shared Markdown agent definitions directly.
+Claude consumes shared Markdown agent definitions directly.
+
+Antigravity requires native tool names in a YAML list and rejects Claude model tiers, generated from every `agents/*.md` with:
+
+```bash
+~/.ai/scripts/sync-gemini-agents.sh
+```
 
 Codex requires TOML definitions, generated from every `agents/*.md` (description and `codex-*` keys come from the frontmatter) with:
 

@@ -109,6 +109,7 @@ for skill in "$AI_HOME"/skills/*; do
   ok "$name"
 
   check_link "$HOME/.claude/skills/x-$name" "$skill"
+  check_link "$HOME/.gemini/config/skills/x-$name" "$skill"
   check_link "$HOME/.agents/skills/x-$name" "$skill"
   check_link "$HOME/.agent/skills/x-$name" "$skill"
 done
@@ -119,12 +120,22 @@ for agent in "$AI_HOME"/agents/*.md; do
   [[ -f "$agent" ]] || continue
 
   name="$(basename "$agent")"
+  gemini_agent="$HOME/.gemini/config/agents/$name"
   codex_agent="$HOME/.codex/agents/${name%.md}.toml"
 
   ok "$name"
 
   check_link "$HOME/.claude/agents/$name" "$agent"
-  check_link "$HOME/.gemini/config/agents/$name" "$agent"
+
+  if [[ -L "$gemini_agent" ]]; then
+    fail "Gemini agent is a raw symlink: $gemini_agent"
+  elif [[ ! -f "$gemini_agent" ]]; then
+    warn "Gemini agent not synced: $gemini_agent"
+  elif [[ "$agent" -nt "$gemini_agent" ]]; then
+    warn "Gemini agent may be stale: $gemini_agent"
+  else
+    ok "$gemini_agent"
+  fi
 
   if [[ ! -f "$codex_agent" ]]; then
     warn "Codex agent not synced: $codex_agent"

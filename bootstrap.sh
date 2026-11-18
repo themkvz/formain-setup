@@ -78,6 +78,7 @@ for skill in "$AI_HOME"/skills/*; do
   name="$(basename "$skill")"
 
   link_dir "$skill" "$HOME/.claude/skills/x-$name"
+  link_dir "$skill" "$HOME/.gemini/config/skills/x-$name"
   link_dir "$skill" "$HOME/.agents/skills/x-$name"
   link_dir "$skill" "$HOME/.agent/skills/x-$name"
 done
@@ -91,8 +92,20 @@ for agent in "$AI_HOME"/agents/*.md; do
   name="$(basename "$agent")"
 
   backup_and_link "$agent" "$HOME/.claude/agents/$name"
-  backup_and_link "$agent" "$HOME/.gemini/config/agents/$name"
 done
+
+echo
+echo "==> Gemini agents"
+
+if [[ -x "$AI_HOME/scripts/sync-gemini-agents.sh" ]]; then
+  if [[ "$DRY_RUN" == "1" ]]; then
+    echo "[dry-run] would sync Gemini agents"
+  else
+    "$AI_HOME/scripts/sync-gemini-agents.sh"
+  fi
+else
+  echo "Skip: sync-gemini-agents.sh not found or not executable"
+fi
 
 echo
 echo "==> Codex agents"
