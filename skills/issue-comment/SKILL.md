@@ -28,8 +28,8 @@ Readers are product managers, leads, other developers, and QA. Most of them read
 - Use short, plain words: "fix", not "implement a solution for". Standard acronyms such as DB, API, and HTTP are fine; do not invent abbreviations such as cfg, impl, or fn. Do not use arrows.
 - Cut filler, ceremony, greetings, closers, praise, emojis, and claims such as "successfully completed". Each line must add context, a fact, or a required action.
 - Fragments are fine. Omit articles only when the result is readable. Keep words such as not, never, no, only, and except, as well as exact numbers and units.
-- Never claim a check passed unless it ran and its result was observed. Label suggested QA steps `To check`.
-- Do not include branch, push, delivery, readiness, or workflow status updates. Include links only when they provide useful evidence or a QA environment, in Notes.
+- In `Checks`, report useful observed product behavior. Omit raw command lists and environment inventories such as `Перевірено: tests/ts/check, локальний dev server (…)`. Omit skipped or pending checks such as `Not run on a device or against the backend yet`, `Not checked on staging`, and `Не перевірено: …`. Apply this in every language, including `qa` mode. If a remaining check needs the reader's action, write it as `To check` with a reproducible action and expected result.
+- Omit branch, commit, push, deployment, delivery, readiness, and workflow status, including standalone notes such as `Not deployed` and `Not committed`. Put useful evidence or QA environment links in Notes.
 - Never include secrets, tokens, `.env` values, personal data, customer names, or internal hostnames (issue links and URLs the user gave are fine).
 
 ## Format
@@ -68,4 +68,4 @@ CSV export omitted archived orders.
 - To check: Export a range with an archived order. Confirm the CSV includes it.
 ```
 
-Before posting, check that every statement is supported, the context and behavior are clear, checks are labeled accurately, and limits, negations, numbers, and units are intact.
+Before posting, read the final body and remove verification logs, skipped-check notes, and workflow status wherever they appear. Check that every factual claim is supported, the context and behavior are clear, checks are labeled accurately, and limits, negations, numbers, and units are intact.
