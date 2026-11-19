@@ -9,7 +9,7 @@ Write your agent instructions, skills, and subagents once in `~/.ai`, and link t
 ## Key features
 
 * **One global instruction file.** `GLOBAL.md` is linked as `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, and `copilot-instructions.md`.
-* **Shared skills.** 13 skills under `skills/`, covering docs lookup, BFF authentication, design patterns, browser checks, release checks, issue tracking, and more. See [docs/skills.md](docs/skills.md).
+* **Shared skills.** 14 skills under `skills/`, covering docs lookup, test authoring, BFF authentication, design patterns, browser checks, release checks, issue tracking, and more. See [docs/skills.md](docs/skills.md).
 * **Shared subagents.** Builder, debugger, project manager, QA assistant, security reviewer, and verifier. See [docs/agents.md](docs/agents.md).
 * **Codex agent generation.** Markdown agents are converted to the TOML format Codex needs.
 * **Safe bootstrap.** A dry-run mode, plus backups of files it replaces.

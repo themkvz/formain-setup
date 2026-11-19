@@ -105,6 +105,14 @@ references/<pattern>.md  intent, use when, do not use when, TS example, pitfalls
 
 Use when structuring new code, refactoring conditionals, duplication, or coupling, reviewing an abstraction, or when a pattern is named.
 
+## `x-write-tests`
+
+Best practices for writing, structuring, reviewing, and pruning test cases across unit, integration, E2E, and Robot Framework suites.
+
+Applies a behavior-first gate both when writing new tests and when pruning existing ones: keep only tests anchored to intended behavior (rejecting tests tied to removed code, platform/type guarantees, private implementation details, duplicates, or test-only production hooks). Covers readable structure, isolated repeatable test data without hardcoded secrets, scoped setup/teardown with safe cleanup, focused reusable helpers, real outcome assertions, semantic locators, and `.robot` formatting rules.
+
+Automatically invoked when writing, updating, or pruning tests.
+
 ## `x-playwright-cli`
 
 Provides browser automation for frontend validation:
