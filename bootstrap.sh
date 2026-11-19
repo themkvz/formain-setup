@@ -62,6 +62,21 @@ link_dir() {
   echo "Linked: $target -> $source"
 }
 
+prune_dangling() {
+  local dir="$1"
+  local link
+
+  [[ -d "$dir" ]] || return 0
+
+  for link in "$dir"/*; do
+    [[ -L "$link" && ! -e "$link" ]] || continue
+    [[ "$(readlink "$link")" == "$AI_HOME"/* ]] || continue
+
+    run rm "$link"
+    echo "Pruned: $link"
+  done
+}
+
 echo "==> Global context"
 
 backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.claude/CLAUDE.md"
@@ -83,6 +98,11 @@ for skill in "$AI_HOME"/skills/*; do
   link_dir "$skill" "$HOME/.agent/skills/x-$name"
 done
 
+prune_dangling "$HOME/.claude/skills"
+prune_dangling "$HOME/.gemini/config/skills"
+prune_dangling "$HOME/.agents/skills"
+prune_dangling "$HOME/.agent/skills"
+
 echo
 echo "==> Shared agents"
 
@@ -93,6 +113,8 @@ for agent in "$AI_HOME"/agents/*.md; do
 
   backup_and_link "$agent" "$HOME/.claude/agents/$name"
 done
+
+prune_dangling "$HOME/.claude/agents"
 
 echo
 echo "==> Gemini agents"

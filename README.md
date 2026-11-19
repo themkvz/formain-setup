@@ -100,6 +100,7 @@ What bootstrap does with files that already exist:
 * **An existing `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `copilot-instructions.md`, or agent file** is moved to `<file>.backup` (or `<file>.backup.<timestamp>` if a backup exists) before the link is created.
 * **An existing skill folder that is not a symlink** is left alone and reported as `Skip existing non-symlink`.
 * **Existing symlinks** are replaced.
+* **Dangling `~/.ai` symlinks and marked generated agent files** whose source was removed are pruned; foreign links and unmarked files are left alone.
 
 Bootstrap doesn't touch tool permissions, credentials, authentication, or other local-only settings.
 
@@ -150,7 +151,7 @@ DRY_RUN=1 ~/.ai/bootstrap.sh
 ~/.ai/scripts/doctor.sh
 ```
 
-`doctor.sh` writes no files. It reads your config and runs `--version`, `claude plugin list`, `rtk init --show`, and `rtk gain` for the CLIs that are installed.
+`doctor.sh` writes nothing outside a temporary folder that it removes. It reads your config and runs `--version`, `claude plugin list`, `rtk init --show`, and `rtk gain` for the CLIs that are installed.
 
 ## Contributing
 

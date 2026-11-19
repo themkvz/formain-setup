@@ -3,7 +3,7 @@ name: x-ask-skill
 description: "Not sure which skill fits? Read the current session, match it against the shared ~/.ai skills (and other installed skills if they fit better), and recommend one with the exact command to run it."
 argument-hint: "[problem, optional]"
 disable-model-invocation: true
-allowed-tools: Bash(head *) Read(~/.ai/skills/**)
+allowed-tools: Bash(head -n 20 ~/.ai/skills/*/SKILL.md) Read(~/.ai/skills/**)
 effort: low
 ---
 
