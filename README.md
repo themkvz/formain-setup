@@ -16,6 +16,18 @@ Write your agent instructions, skills, and subagents once in `~/.ai`, and link t
 * **Health check.** `doctor.sh` checks links, skills, agents, script syntax, JSON/TOML configs, and installed CLIs.
 * **Smoke test and CI.** `scripts/test.sh` runs bootstrap, sync, and doctor against a throwaway home folder. GitHub Actions runs it on Linux and macOS.
 
+## SDLC coverage
+
+Built for a solo developer or small team — covers the core delivery stages without heavy process:
+
+| Stage | Agents | Skills | Responsibility |
+| --- | --- | --- | --- |
+| Plan & track | `project-manager` | `x-create-issue`, `x-issue-comment` | Create issues, keep tracker status in sync with code, post concise updates. |
+| Design | — *(main agent)* | `x-preferred-stack`, `x-design-patterns`, `x-bff-api-architecture-flow`, `x-design-system-board` | Pick stack defaults, structure code and auth flows, outline UI design tokens. |
+| Build & fix | `builder`, `debugger` | `x-bff-api-client`, `x-find-docs`, `x-write-tests` | Implement specs, find root causes, check current docs, write behavior-first tests. |
+| Verify & QA | `verifier`, `qa-assistant` | `x-write-tests`, `x-playwright-cli`, `x-issue-comment` | Run features, add edge-case tests, verify UI flows in a real browser, post QA comments. |
+| Review & ship | `security-reviewer` | `x-ship-check` | Audit changed attack surface for security issues and run pre-launch checks. |
+
 ## Architecture
 
 ```mermaid
