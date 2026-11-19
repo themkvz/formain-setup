@@ -22,7 +22,8 @@ Built for a solo developer or small team — covers the core delivery stages wit
 
 | Stage | Agents | Skills | Responsibility |
 | --- | --- | --- | --- |
-| Plan & track | `project-manager` | `x-create-issue`, `x-issue-comment` | Create issues, keep tracker status in sync with code, post concise updates. |
+| Plan & scope | — *(main agent)* | `x-create-issue` | Clarify specs, scope work, and create issues. |
+| Track & route | `project-manager` | `x-create-issue`, `x-issue-comment` | Route issues, check blockers, keep tracker status in sync with code, post concise updates. |
 | Design | — *(main agent)* | `x-preferred-stack`, `x-design-patterns`, `x-bff-api-architecture-flow`, `x-design-system-board` | Pick stack defaults, structure code and auth flows, outline UI design tokens. |
 | Build & fix | `builder`, `debugger` | `x-bff-api-client`, `x-find-docs`, `x-write-tests` | Implement specs, find root causes, check current docs, write behavior-first tests. |
 | Verify & QA | `verifier`, `qa-assistant` | `x-write-tests`, `x-playwright-cli`, `x-issue-comment` | Run features, add edge-case tests, verify UI flows in a real browser, post QA comments. |

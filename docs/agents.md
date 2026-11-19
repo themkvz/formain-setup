@@ -20,7 +20,7 @@ Runs the feature, adds edge-case tests at medium effort, reports problems withou
 
 ## Project Manager
 
-Keeps tracker issues in sync with the code: reads issues, compares them with code and git history, posts updates, ticks criteria that have evidence, sets status (Done only on request), creates issues on request. Does not test behavior.
+Routes issues, checks blockers, and keeps tracker issues in sync with the code: reads issues, compares them with code and git history, posts updates, ticks criteria that have evidence, sets status (Done only on request), creates issues on request. Does not plan features or test behavior.
 
 ## QA Assistant
 
