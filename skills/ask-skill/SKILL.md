@@ -3,7 +3,7 @@ name: x-ask-skill
 description: "Not sure which skill fits? Read the current session, match it against the shared ~/.ai skills (and other installed skills if they fit better), and recommend one with the exact command to run it."
 argument-hint: "[problem, optional]"
 disable-model-invocation: true
-allowed-tools: Bash(head -n 20 ~/.ai/skills/*/SKILL.md) Read(~/.ai/skills/**)
+allowed-tools: Bash(head -n 20 ~/.ai/skills/*/SKILL.md) Read(~/.ai/skills/**) Read(~/.ai/skills.local/**) Read(~/.ai/docs/skills.md)
 effort: low
 ---
 
@@ -17,11 +17,13 @@ The input is the session, not a task name. Read the recent conversation: what wa
 
 ## 2. Collect the skills
 
-Shared skills are the user's own setup and come first. Read their frontmatter:
+Shared skills are the user's own setup and come first. Read their frontmatter (including local overlay skills under `~/.ai/skills.local/*/SKILL.md`):
 
 ```bash
 head -n 20 ~/.ai/skills/*/SKILL.md
 ```
+
+If shell access outside the active workspace is blocked by a sandbox, read `~/.ai/docs/skills.md` and `SKILL.md` files via file-read tools instead of running `head`.
 
 Descriptions can span several lines (`description: >`), so read up to the second `---`; if a file's output has no second `---`, Read that file. Skip `x-ask-skill` itself. The installed name is the frontmatter `name` (`x-<dir>`).
 

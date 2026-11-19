@@ -126,6 +126,7 @@ Bootstrap doesn't touch tool permissions, credentials, authentication, or other 
   ~/.ai/scripts/sync-gemini-agents.sh
   ~/.ai/scripts/sync-codex-agents.sh
   ```
+* Local overlays: put private or machine-specific overrides in `skills.local/<name>/SKILL.md` and `agents.local/<name>.md` (both gitignored; matching names override `skills/` and `agents/`).
 
 ## Repository layout
 
@@ -134,7 +135,9 @@ Bootstrap doesn't touch tool permissions, credentials, authentication, or other 
 ├── GLOBAL.md                     global instructions for every tool
 ├── bootstrap.sh                  creates links and generated config
 ├── agents/                       shared subagents (Markdown + frontmatter)
+├── agents.local/                 gitignored local subagent overlays
 ├── skills/<name>/SKILL.md        shared skills, some with references/
+├── skills.local/                 gitignored local skill overlays
 ├── scripts/
 │   ├── doctor.sh                 health check
 │   ├── test.sh                   smoke test in a throwaway home folder

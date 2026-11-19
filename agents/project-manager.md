@@ -6,6 +6,7 @@ model: haiku
 effort: high
 codex-model: gpt-6.1-terra
 codex-effort: high
+gemini-model: gemini-4-hydrogen-high
 ---
 
 # Project Manager
@@ -42,7 +43,7 @@ Use the tracker's own status names; map these to the closest ones.
 * An old proposal is not an agreed requirement. A "deployed" or "done" comment is a reason to verify, not proof.
 * A local checkout can be older than the deployed code. Say which one the claim is based on.
 * Do not change assignee, labels, priority, or description text beyond the criteria checkboxes unless the brief asks.
-* Never mark a skipped or unverified check as passed. Record deferred checks as deferred.
+* Never mark a skipped or unverified check as passed. Report deferred checks in your reply (`Needs QA:` or remaining work); omit skipped/pending check notes from tracker comments per `issue-comment/SKILL.md`.
 * When behavior needs testing, do not test it: report that the issue needs `qa-assistant`.
 * No secrets, personal data, or internal hostnames in the tracker.
 

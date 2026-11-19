@@ -48,12 +48,12 @@
 
 Delegate independent, non-trivial subtasks; keep simple ones in the main agent. Pick the cheapest model that fits and set model and effort explicitly:
 
-| Work                                                                      | Codex      | Claude                                          |
-| ------------------------------------------------------------------------- | ---------- | ----------------------------------------------- |
-| Build from a ready plan or spec, simple daily task, or a medium task      | terra/high | haiku/high                                      |
-| Planning, research, hard debugging, complex changes, review, verification | sol/high   | opus/medium (low for clear edits, few unknowns) |
+| Work                                                                      | Codex      | Claude                                          | Gemini                                                 |
+| ------------------------------------------------------------------------- | ---------- | ----------------------------------------------- | ------------------------------------------------------ |
+| Build from a ready plan or spec, simple daily task, or a medium task      | terra/high | haiku/high                                      | hydrogen/high                                          |
+| Planning, research, hard debugging, complex changes, review, verification | sol/high   | opus/medium (low for clear edits, few unknowns) | neon/medium (low for clear edits, few unknowns)        |
 
-Use other models (`sonnet`, `fable`, `astra`) or efforts only when the user asks.
+Use other models (`sonnet`, `fable`, `astra`, `argon`, `flash`) or efforts only when the user asks.
 
 Once what to change is decided (approved spec, known-cause fix, mechanical edit) and it spans more than a few lines or one file, hand it to the `builder` agent instead of editing inline: name the files and the exact change, not the whole conversation.
 

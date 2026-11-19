@@ -38,9 +38,15 @@ pass "dry run wrote nothing"
 
 echo "==> Bootstrap creates links and keeps a backup"
 
-mkdir -p "$TEST_HOME/.codex"
+chmod -x "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh"
+mkdir -p "$TEST_HOME/.codex/agents" "$TEST_HOME/.gemini/config/agents"
 echo "old instructions" > "$TEST_HOME/.codex/AGENTS.md"
+echo "custom gemini builder" > "$TEST_HOME/.gemini/config/agents/builder.md"
+echo "custom codex builder" > "$TEST_HOME/.codex/agents/builder.toml"
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
+
+[[ -x "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" && -x "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" ]] ||
+  die "bootstrap.sh did not make sync scripts executable"
 
 assert_link "$TEST_HOME/.claude/CLAUDE.md" "$TEST_HOME/.ai/GLOBAL.md"
 assert_link "$TEST_HOME/.codex/AGENTS.md" "$TEST_HOME/.ai/GLOBAL.md"
@@ -49,7 +55,9 @@ assert_link "$TEST_HOME/.copilot/copilot-instructions.md" "$TEST_HOME/.ai/GLOBAL
 pass "global context links"
 
 [[ "$(cat "$TEST_HOME/.codex/AGENTS.md.backup")" == "old instructions" ]] || die "Backup missing"
-pass "existing file backed up"
+[[ "$(cat "$TEST_HOME/.gemini/config/agents/builder.md.backup")" == "custom gemini builder" ]] || die "Gemini agent backup missing"
+[[ "$(cat "$TEST_HOME/.codex/agents/builder.toml.backup")" == "custom codex builder" ]] || die "Codex agent backup missing"
+pass "existing files backed up"
 
 for skill in "$TEST_HOME"/.ai/skills/*/; do
   name="$(basename "$skill")"
@@ -65,13 +73,15 @@ for agent in "$TEST_HOME"/.ai/agents/*.md; do
   [[ -s "$TEST_HOME/.gemini/config/agents/$name" && ! -L "$TEST_HOME/.gemini/config/agents/$name" ]] || die "Missing Gemini agent: $name"
   [[ -s "$TEST_HOME/.codex/agents/${name%.md}.toml" ]] || die "Missing Codex agent: ${name%.md}.toml"
 done
-pass "agent links, Gemini agents, and Codex agents"
+pass "agent links, Gemini agents, and Codex agents synced even without initial +x"
 
 echo "==> Bootstrap is safe to run twice"
 
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 assert_link "$TEST_HOME/.claude/CLAUDE.md" "$TEST_HOME/.ai/GLOBAL.md"
 [[ "$(cat "$TEST_HOME/.codex/AGENTS.md.backup")" == "old instructions" ]] || die "Backup changed"
+[[ "$(cat "$TEST_HOME/.gemini/config/agents/builder.md.backup")" == "custom gemini builder" ]] || die "Gemini backup changed"
+[[ "$(cat "$TEST_HOME/.codex/agents/builder.toml.backup")" == "custom codex builder" ]] || die "Codex backup changed"
 pass "second run"
 
 echo "==> Bootstrap prunes leftovers and keeps foreign files"
@@ -95,7 +105,7 @@ env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 [[ -f "$TEST_HOME/.codex/agents/mine.toml" ]] || die "Foreign Codex agent was removed"
 pass "leftovers pruned and foreign files kept"
 
-echo "==> Codex sync rejects unsupported frontmatter"
+echo "==> Sync scripts validate frontmatter and handle empty agents/"
 
 mkdir -p "$TEST_HOME/bad-home/.ai/agents"
 cat > "$TEST_HOME/bad-home/.ai/agents/bad.md" <<'EOF'
@@ -108,7 +118,36 @@ EOF
 if env HOME="$TEST_HOME/bad-home" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null 2>&1; then
   die "sync-codex-agents.sh accepted quoted description"
 fi
-pass "unsupported frontmatter rejected"
+if env HOME="$TEST_HOME/bad-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
+  die "sync-gemini-agents.sh accepted quoted description"
+fi
+
+mkdir -p "$TEST_HOME/bad-fm-home/.ai/agents"
+cat > "$TEST_HOME/bad-fm-home/.ai/agents/nofm.md" <<'EOF'
+description: plain line without frontmatter
+Body
+EOF
+if env HOME="$TEST_HOME/bad-fm-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
+  die "sync-gemini-agents.sh accepted missing frontmatter"
+fi
+
+cat > "$TEST_HOME/bad-fm-home/.ai/agents/nofm.md" <<'EOF'
+---
+name: unclosed
+description: unclosed frontmatter
+Body
+EOF
+if env HOME="$TEST_HOME/bad-fm-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
+  die "sync-gemini-agents.sh accepted unclosed frontmatter"
+fi
+pass "unsupported and missing frontmatter rejected"
+
+mkdir -p "$TEST_HOME/empty-home/.ai/agents"
+env HOME="$TEST_HOME/empty-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null ||
+  die "sync-gemini-agents.sh failed on empty agents/"
+env HOME="$TEST_HOME/empty-home" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null ||
+  die "sync-codex-agents.sh failed on empty agents/"
+pass "sync scripts succeed with empty agents/"
 
 echo "==> Doctor reports no failures"
 
@@ -139,5 +178,74 @@ grep -q '^! Gemini agent out of date:' "$TEST_HOME/doctor-edited.log" ||
 grep -q '^! Codex agent out of date:' "$TEST_HOME/doctor-edited.log" ||
   { cat "$TEST_HOME/doctor-edited.log"; die "doctor.sh missed edited Codex agent"; }
 pass "edited content warns for Gemini and Codex"
+
+echo "==> Local overlays link, sync, pass doctor, and prune on removal"
+
+mkdir -p "$TEST_HOME/.ai/skills.local/local-only" "$TEST_HOME/.ai/skills.local/ask-skill" "$TEST_HOME/.ai/agents.local"
+cat > "$TEST_HOME/.ai/skills.local/local-only/SKILL.md" <<'EOF'
+---
+name: x-local-only
+description: Local skill for testing
+---
+Body
+EOF
+cat > "$TEST_HOME/.ai/skills.local/ask-skill/SKILL.md" <<'EOF'
+---
+name: x-ask-skill
+description: Local override skill for testing
+---
+Body
+EOF
+cat > "$TEST_HOME/.ai/agents.local/local-agent.md" <<'EOF'
+---
+name: local-agent
+description: Local agent for testing
+tools: Read
+---
+Local agent body
+EOF
+cat > "$TEST_HOME/.ai/agents.local/verifier.md" <<'EOF'
+---
+name: verifier
+description: Local override verifier
+tools: Read
+---
+Local verifier body
+EOF
+
+env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
+env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
+
+for dir in .claude/skills .gemini/config/skills .agents/skills .agent/skills; do
+  assert_link "$TEST_HOME/$dir/x-local-only" "$TEST_HOME/.ai/skills.local/local-only"
+  assert_link "$TEST_HOME/$dir/x-ask-skill" "$TEST_HOME/.ai/skills.local/ask-skill"
+done
+assert_link "$TEST_HOME/.claude/agents/local-agent.md" "$TEST_HOME/.ai/agents.local/local-agent.md"
+assert_link "$TEST_HOME/.claude/agents/verifier.md" "$TEST_HOME/.ai/agents.local/verifier.md"
+[[ -s "$TEST_HOME/.gemini/config/agents/local-agent.md" && ! -L "$TEST_HOME/.gemini/config/agents/local-agent.md" ]] ||
+  die "Missing local Gemini agent"
+[[ -s "$TEST_HOME/.codex/agents/local-agent.toml" ]] || die "Missing local Codex agent"
+grep -q 'Local override verifier' "$TEST_HOME/.gemini/config/agents/verifier.md" ||
+  die "Gemini verifier not overridden by agents.local"
+grep -q 'Local override verifier' "$TEST_HOME/.codex/agents/verifier.toml" ||
+  die "Codex verifier not overridden by agents.local"
+
+env HOME="$TEST_HOME" PATH="/usr/bin:/bin" "$TEST_HOME/.ai/scripts/doctor.sh" > "$TEST_HOME/doctor-local.log" ||
+  { cat "$TEST_HOME/doctor-local.log"; die "doctor.sh failed with local overlays"; }
+grep -q '^Failures: 0$' "$TEST_HOME/doctor-local.log" || die "doctor.sh reported failures with local overlays"
+pass "local overlays linked, synced, not pruned, and pass doctor"
+
+rm -rf "$TEST_HOME/.ai/skills.local" "$TEST_HOME/.ai/agents.local"
+env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
+
+for dir in .claude/skills .gemini/config/skills .agents/skills .agent/skills; do
+  [[ ! -L "$TEST_HOME/$dir/x-local-only" ]] || die "Removed local skill not pruned from $dir"
+  assert_link "$TEST_HOME/$dir/x-ask-skill" "$TEST_HOME/.ai/skills/ask-skill"
+done
+[[ ! -L "$TEST_HOME/.claude/agents/local-agent.md" ]] || die "Removed local Claude agent not pruned"
+[[ ! -e "$TEST_HOME/.gemini/config/agents/local-agent.md" ]] || die "Removed local Gemini agent not pruned"
+[[ ! -e "$TEST_HOME/.codex/agents/local-agent.toml" ]] || die "Removed local Codex agent not pruned"
+assert_link "$TEST_HOME/.claude/agents/verifier.md" "$TEST_HOME/.ai/agents/verifier.md"
+pass "local overlays pruned and base targets restored after removal"
 
 printf '\nAll %d checks passed.\n' "$CHECKS"

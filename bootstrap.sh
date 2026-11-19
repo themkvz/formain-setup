@@ -87,7 +87,7 @@ backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.copilot/copilot-instructions.md"
 echo
 echo "==> Shared skills"
 
-for skill in "$AI_HOME"/skills/*; do
+for skill in "$AI_HOME"/skills/* "$AI_HOME"/skills.local/*; do
   [[ -d "$skill" ]] || continue
 
   name="$(basename "$skill")"
@@ -106,7 +106,7 @@ prune_dangling "$HOME/.agent/skills"
 echo
 echo "==> Shared agents"
 
-for agent in "$AI_HOME"/agents/*.md; do
+for agent in "$AI_HOME"/agents/*.md "$AI_HOME"/agents.local/*.md; do
   [[ -f "$agent" ]] || continue
 
   name="$(basename "$agent")"
@@ -115,6 +115,14 @@ for agent in "$AI_HOME"/agents/*.md; do
 done
 
 prune_dangling "$HOME/.claude/agents"
+
+echo
+echo "==> Scripts"
+
+for script in "$AI_HOME"/scripts/*.sh; do
+  [[ -f "$script" ]] || continue
+  run chmod +x "$script"
+done
 
 echo
 echo "==> Gemini agents"
@@ -141,14 +149,6 @@ if [[ -x "$AI_HOME/scripts/sync-codex-agents.sh" ]]; then
 else
   echo "Skip: sync-codex-agents.sh not found or not executable"
 fi
-
-echo
-echo "==> Scripts"
-
-for script in "$AI_HOME"/scripts/*.sh; do
-  [[ -f "$script" ]] || continue
-  run chmod +x "$script"
-done
 
 echo
 
