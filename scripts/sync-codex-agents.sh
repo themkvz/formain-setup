@@ -32,8 +32,8 @@ sync_agent() {
   description="${description//\\/\\\\}"
   description="${description//\"/\\\"}"
 
-  # Codex-specific model/effort, set via the x-model-router skill scoped to
-  # Codex's own catalog. Absent means: inherit Codex's default model/effort.
+  # Codex-specific model/effort from frontmatter. Absent means: inherit
+  # Codex's default model/effort.
   local codex_model codex_effort codex_sandbox
   codex_model="$(frontmatter_value "codex-model" "$source")"
   codex_effort="$(frontmatter_value "codex-effort" "$source")"

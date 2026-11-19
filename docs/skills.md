@@ -170,12 +170,3 @@ User-invoked only. Generates a design system documentation board (sections DS-00
 ```text
 /x-design-system-board
 ```
-
-## `x-model-router`
-
-User-invoked only. Asks Jev (TypeSafe) which of the current host's available models best fits a task. Sends the task description and per-model criteria to `https://api.typesafe.ai/v1/systemone`; needs `TYPESAFE_API_KEY` in the environment.
-
-```text
-/x-model-router
-```
-

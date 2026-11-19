@@ -49,6 +49,5 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJE
 ## Findings considered and rejected
 
 - Hardcoded `~/.ai` location: documented requirement (`README.md:64`).
-- `x-model-router` sends the task text to the TypeSafe API: user-invoked only, by design.
 - Model settings repeated by hand in `docs/agents.md`: in sync today; a check costs more than the drift.
 - Full YAML parsing of agent frontmatter in `sync-codex-agents.sh`: no agent needs it; the guard in plan 002 is enough.
