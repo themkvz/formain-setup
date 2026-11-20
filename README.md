@@ -47,7 +47,7 @@ flowchart LR
   S -- "symlink as x-*" --> SK["~/.claude/skills/<br/>~/.gemini/config/skills/<br/>~/.agents/skills/<br/>~/.agent/skills/"]
 
   A -- symlink --> AG["~/.claude/agents/"]
-  A -- "sync-gemini-agents.sh" --> GA["~/.gemini/config/agents/*.md"]
+  A -- "sync-gemini-agents.sh" --> GA["~/.gemini/config/agents/*/agent.md"]
   A -- "sync-codex-agents.sh" --> CT["~/.codex/agents/*.toml"]
 ```
 
@@ -56,7 +56,7 @@ flowchart LR
 ### Notable decisions
 
 * **Links, not copies.** `bootstrap.sh` creates symlinks, so there is nothing to keep in sync, except the Antigravity and Codex agents, which have to be generated.
-* **Antigravity and Codex agents are generated.** Antigravity expects native tool names in a YAML list and rejects Claude model tiers, so `scripts/sync-gemini-agents.sh` writes `~/.gemini/config/agents/<name>.md`. Codex needs TOML, so `scripts/sync-codex-agents.sh` turns the description, body, and `codex-*` frontmatter keys of each `agents/*.md` into `~/.codex/agents/<name>.toml`. The sandbox defaults to `read-only` unless an agent sets `codex-sandbox`.
+* **Antigravity and Codex agents are generated.** Antigravity expects native tool names in a YAML list and rejects Claude model tiers, so `scripts/sync-gemini-agents.sh` writes `~/.gemini/config/agents/<name>/agent.md`. Codex needs TOML, so `scripts/sync-codex-agents.sh` turns the description, body, and `codex-*` frontmatter keys of each `agents/*.md` into `~/.codex/agents/<name>.toml`. The sandbox defaults to `read-only` unless an agent sets `codex-sandbox`.
 * **Small global context.** `GLOBAL.md` only holds behavior useful in nearly every session: scope, evidence-first investigation, minimal changes, verification, safety, and concise communication. Framework and project knowledge lives in skills or in each project.
 * **Skills load on demand.** Most skills are user-invoked only (`disable-model-invocation: true`), so they don't use up context until you call them with `/x-<name>`.
 * **Safety lives in tool permissions, not prompts.** Rules such as "approval before push" and "no force push or `git reset --hard`" belong in each tool's permission settings. This repository doesn't manage those settings.
@@ -70,7 +70,7 @@ What `bootstrap.sh` sets up for each tool:
 
 * **Claude Code:** `~/.claude/CLAUDE.md`, `~/.claude/skills/x-*`, `~/.claude/agents/*.md`
 * **Codex CLI:** `~/.codex/AGENTS.md`, `~/.codex/agents/*.toml` (generated)
-* **Antigravity / Gemini:** `~/.gemini/GEMINI.md`, `~/.gemini/config/skills/x-*`, `~/.gemini/config/agents/*.md` (generated)
+* **Antigravity / Gemini:** `~/.gemini/GEMINI.md`, `~/.gemini/config/skills/x-*`, `~/.gemini/config/agents/*/agent.md` (generated)
 * **GitHub Copilot:** `~/.copilot/copilot-instructions.md` (global instructions only)
 * **Shared skill folders:** `~/.agents/skills/x-*` and `~/.agent/skills/x-*`
 
@@ -142,7 +142,7 @@ Bootstrap doesn't touch tool permissions, credentials, authentication, or other 
 ├── scripts/
 │   ├── doctor.sh                 health check
 │   ├── test.sh                   smoke test in a throwaway home folder
-│   ├── sync-gemini-agents.sh     agents/*.md → ~/.gemini/config/agents/*.md
+│   ├── sync-gemini-agents.sh     agents/*.md → ~/.gemini/config/agents/<name>/agent.md
 │   └── sync-codex-agents.sh      agents/*.md → ~/.codex/agents/*.toml
 └── docs/                         skill and agent reference
 ```

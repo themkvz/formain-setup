@@ -32,9 +32,10 @@ frontmatter_value() {
 
 sync_agent() {
   local source="$1"
-  local name target description backup tmp
+  local name target_dir target description gemini_model backup tmp
   name="$(basename "$source" .md)"
-  target="$DST/$name.md"
+  target_dir="$DST/$name"
+  target="$target_dir/agent.md"
 
   if ! has_frontmatter "$source"; then
     echo "Missing frontmatter in $source" >&2
@@ -49,6 +50,17 @@ sync_agent() {
       ;;
   esac
 
+  gemini_model="$(frontmatter_value "gemini-model" "$source")"
+  case "$gemini_model" in
+    ''|inherit|flash_lite|flash|pro) ;;
+    *)
+      echo "Unsupported gemini-model in $source: $gemini_model (use inherit, flash_lite, flash, or pro)" >&2
+      exit 1
+      ;;
+  esac
+
+  mkdir -p "$target_dir"
+
   if [[ -L "$target" ]]; then
     rm "$target"
   elif [[ -f "$target" && "$(tail -n 1 "$target")" != "$MARKER" ]]; then
@@ -60,7 +72,7 @@ sync_agent() {
     mv "$target" "$backup"
   fi
 
-  tmp="$(mktemp "$DST/.sync.XXXXXX")"
+  tmp="$(mktemp "$target_dir/.sync.XXXXXX")"
   if ! {
     awk -v fallback_name="$name" '
       function has_token(list, tok,    n, i, arr) {
@@ -104,7 +116,7 @@ sync_agent() {
         print "name: " agent_name
         print "description: \"" desc "\""
         print "subagent: true"
-        print "mainAgent: false"
+        print "mainAgent: true"
         if (gmodel != "") print "model: " gmodel
         print "tools: [" mapped "]"
         print "---"
@@ -133,14 +145,24 @@ for source in "$SRC"/*.md "$SRC_LOCAL"/*.md; do
   sync_agent "$source"
 done
 
+for target in "$DST"/*/agent.md; do
+  [[ -f "$target" && ! -L "$target" ]] || continue
+  [[ "$(tail -n 1 "$target")" == "$MARKER" ]] || continue
+  target_dir="$(dirname "$target")"
+  name="$(basename "$target_dir")"
+  [[ ! -f "$SRC/$name.md" && ! -f "$SRC_LOCAL/$name.md" ]] || continue
+
+  rm "$target"
+  rmdir "$target_dir" 2>/dev/null || true
+  echo "Pruned: $target"
+done
+
 for target in "$DST"/*.md; do
   [[ -f "$target" && ! -L "$target" ]] || continue
   [[ "$(tail -n 1 "$target")" == "$MARKER" ]] || continue
-  name="$(basename "$target")"
-  [[ ! -f "$SRC/$name" && ! -f "$SRC_LOCAL/$name" ]] || continue
 
   rm "$target"
-  echo "Pruned: $target"
+  echo "Pruned legacy: $target"
 done
 
 echo "Gemini agents synced."

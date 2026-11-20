@@ -6,7 +6,7 @@ model: haiku
 effort: high
 codex-model: gpt-6.1-terra
 codex-effort: high
-gemini-model: gemini-4-hydrogen-medium
+gemini-model: flash
 ---
 
 # Project Manager

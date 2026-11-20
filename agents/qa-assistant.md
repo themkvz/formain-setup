@@ -7,7 +7,7 @@ effort: high
 codex-model: gpt-6.1-terra
 codex-effort: high
 codex-sandbox: workspace-write
-gemini-model: gemini-4-hydrogen-high
+gemini-model: flash
 ---
 
 # QA Assistant

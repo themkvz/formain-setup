@@ -6,7 +6,7 @@ model: opus
 effort: medium
 codex-model: gpt-6.1-sol
 codex-effort: high
-gemini-model: gemini-4-neon-medium
+gemini-model: pro
 ---
 
 # Security Reviewer

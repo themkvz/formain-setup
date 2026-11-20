@@ -19,7 +19,16 @@ Everything below this section is the upstream skill from `@playwright/cli`; keep
 
 ### Attach to an existing browser
 
-Use `attach` instead of `open` when the user asks to use their own or an already running browser, or when the flow needs their real sign-ins (SSO, 2FA, extensions, open tabs). Otherwise launch a clean browser with `open`.
+Use `attach` instead of `open` when the user asks to use their own or an already running browser, or when the flow needs sign-in or a human step (SSO, 2FA, captcha, magic link, extensions, open tabs). Otherwise launch a clean browser with `open`.
+
+Default for sign-in and human steps: the dedicated agent Google Chrome. The user keeps a separate Google Chrome only for agent UI checks, signed in to localhost, staging, and other test sites; their personal browser is a different app.
+
+- Attach with `playwright-cli attach --cdp=chrome -s=chrome`. One agent at a time: if `list` shows the `chrome` session in use by another task, wait or ask.
+- One-time setup (if attach fails, tell the user): open Google Chrome, enable "Allow remote debugging for this browser instance" at `chrome://inspect/#remote-debugging`, and sign in to the needed sites. After a Mac restart the user opens Chrome again, and you `attach` again.
+- Sign-in expired or the page needs a human (login, 2FA code, captcha, consent): stop and ask the user to do it in that Chrome window, then continue in the same tab. Never type the user's passwords or codes yourself.
+- Use only test accounts there. If a page shows a personal account, stop and tell the user.
+
+Other targets:
 
 - Find targets with `playwright-cli list --all`. Pick one target per `attach`:
   - Running Chrome/Edge: `playwright-cli attach --cdp=chrome -s=chrome` (or `msedge`, `chrome-canary`, ...). The user must first enable "Allow remote debugging for this browser instance" at `chrome://inspect/#remote-debugging`.

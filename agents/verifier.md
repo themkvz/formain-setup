@@ -7,7 +7,7 @@ effort: medium
 codex-model: gpt-6.1-sol
 codex-effort: high
 codex-sandbox: workspace-write
-gemini-model: gemini-4-neon-medium
+gemini-model: pro
 ---
 
 # Verifier

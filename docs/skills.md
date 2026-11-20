@@ -125,6 +125,9 @@ Provides browser automation for frontend validation:
 * screenshots
 * user flows
 * attaching to the user's running browser (`attach` / `detach`) for flows that need real sign-ins
+* sign-in and human steps (2FA, captcha) through a dedicated agent Google Chrome
+
+One-time setup for the agent Chrome: install Google Chrome and use it only for agent UI checks (keep Arc, Dia, or another browser for personal use). Enable "Allow remote debugging for this browser instance" at `chrome://inspect/#remote-debugging`, then sign in to localhost, staging, and other test sites with test accounts only. Agents run `playwright-cli attach --cdp=chrome -s=chrome`. After a restart, open Chrome again; agents attach again.
 
 The body and `references/` are a copy of the skill bundled with `@playwright/cli`; only the frontmatter and the `Local rules` section are ours. To sync after a CLI update:
 

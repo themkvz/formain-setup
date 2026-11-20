@@ -47,4 +47,4 @@ The generated TOML uses `codex-sandbox` from the frontmatter and defaults to `sa
 
 ## Model settings
 
-Model, effort, tools, and Codex sandbox are set in each file's frontmatter (`model`/`effort` for Claude, `codex-*` for Codex, `gemini-model` for Antigravity).
+Model, effort, tools, and Codex sandbox are set in each file's frontmatter (`model`/`effort` for Claude, `codex-*` for Codex, `gemini-model` for Antigravity: `inherit`, `flash_lite`, `flash`, or `pro`).
