@@ -150,6 +150,17 @@ User-invoked only. Final pre-launch verification for any product type: website, 
 
 Report sections: Performance, Security, Best practices, UX, Maintainability, plus "Needs confirmation" for what the repo cannot prove (DNS, backups, store settings). Checklists live in `references/` (core, web, backend, mobile) and load by product type.
 
+## `x-untangle-codebase`
+
+User-invoked only. A structural refactor of the whole codebase, or of one area per run when the codebase is big (it proposes areas ranked by churn, co-change, and size). Asks whether to also prune comments and tests, records a baseline of the project's checks, then lists every hidden link, needless link, surplus piece, and special case in `.untangle/decision-log.md`, with each redesign fix above the problems it solves. Stops for approval of the plan: fixes grouped into batches, highest leverage first, with fixes that touch a public API, data format, or dependency marked `[contract]`. Then fixes the approved batches, has subagents search again, and repeats until nothing worth fixing is left in scope. Each batch ends with green checks, so a run can stop there; running the skill again resumes from the log. Never commits.
+
+```text
+/x-untangle-codebase
+/x-untangle-codebase src/billing
+```
+
+`scripts/cochange.sh` prints git churn and files that change together; `references/tooling.md` lists skeleton and import-graph commands per ecosystem.
+
 ## `x-wait-what`
 
 User-invoked only. Re-explains the last message as a smart caveman: short line, 3–6 steps, why, next action. Keeps real terms and `path:line` references. Runs at low effort to save tokens. Pass the confusing part to narrow it.

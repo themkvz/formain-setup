@@ -9,7 +9,7 @@ Write your agent instructions, skills, and subagents once in `~/.ai`, and link t
 ## Key features
 
 * **One global instruction file.** `GLOBAL.md` is linked as `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, and `copilot-instructions.md`.
-* **Shared skills.** 13 skills under `skills/`, covering docs lookup, test authoring, BFF authentication, design patterns, browser checks, release checks, issue tracking, and more. See [docs/skills.md](docs/skills.md).
+* **Shared skills.** 14 skills under `skills/`, covering docs lookup, test authoring, BFF authentication, design patterns, browser checks, release checks, issue tracking, codebase refactoring, and more. See [docs/skills.md](docs/skills.md).
 * **Shared subagents.** Builder, debugger, project manager, QA assistant, security reviewer, and verifier. See [docs/agents.md](docs/agents.md).
 * **Codex agent generation.** Markdown agents are converted to the TOML format Codex needs.
 * **Safe bootstrap.** A dry-run mode, plus backups of files it replaces.
@@ -25,7 +25,7 @@ Built for a solo developer or small team — covers the core delivery stages wit
 | Plan & scope | — *(main agent)* | `x-create-issue` | Clarify specs, scope work, and create issues. |
 | Track & route | `project-manager` | `x-create-issue`, `x-issue-comment` | Route issues, check blockers, keep tracker status in sync with code, post concise updates. |
 | Design | — *(main agent)* | `x-preferred-stack`, `x-design-patterns`, `x-bff-api-architecture-flow`, `x-design-system-board` | Pick stack defaults, structure code and auth flows, outline UI design tokens. |
-| Build & fix | `builder`, `debugger` | `x-bff-api-client`, `x-find-docs`, `x-write-tests` | Implement specs, find root causes, check current docs, write behavior-first tests. |
+| Build & fix | `builder`, `debugger` | `x-bff-api-client`, `x-find-docs`, `x-write-tests`, `x-untangle-codebase` | Implement specs, find root causes, check current docs, write behavior-first tests, untangle codebase structure. |
 | Verify & QA | `verifier`, `qa-assistant` | `x-write-tests`, `x-playwright-cli`, `x-issue-comment` | Run features, add edge-case tests, verify UI flows in a real browser, post QA comments. |
 | Review & ship | `security-reviewer` | `x-ship-check` | Audit changed attack surface for security issues and run pre-launch checks. |
 
