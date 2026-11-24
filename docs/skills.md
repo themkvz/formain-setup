@@ -124,16 +124,20 @@ Provides browser automation for frontend validation:
 * network failures
 * screenshots
 * user flows
-* attaching to the user's running browser (`attach` / `detach`) for flows that need real sign-ins
-* sign-in and human steps (2FA, captcha) through a dedicated agent Google Chrome
+* signed-in checks through a per-project persistent profile
+* screenshots, video, and traces as evidence for approving UI changes
 
-One-time setup for the agent Chrome: install Google Chrome and use it only for agent UI checks (keep Arc, Dia, or another browser for personal use). Enable "Allow remote debugging for this browser instance" at `chrome://inspect/#remote-debugging`, then sign in to localhost, staging, and other test sites with test accounts only. Agents run `playwright-cli attach --cdp=chrome -s=chrome`. After a restart, open Chrome again; agents attach again.
+Signed-in pages: the agent prefers a login with no human (seeded test user, dev-only login route). Otherwise it opens `~/.cache/playwright-cli/profiles/<project>` in a headed window once, you sign in there with a test account (SSO, 2FA, captcha), and later checks run headless with the same profile. When the session expires, the agent asks you to sign in again. Parallel agents share the login through a saved state file in `~/.cache/playwright-cli/state/`. Your own browser is never touched.
+
+Attaching to a running browser (`attach --cdp=chrome`, extension) is a last resort, only when you ask for it or a profile cannot work.
+
+When a command prints "Update available", the agent tells you; it never updates the CLI itself.
 
 The body and `references/` are a copy of the skill bundled with `@playwright/cli`; only the frontmatter and the `Local rules` section are ours. To sync after a CLI update:
 
 ```bash
 bun add -g @playwright/cli@latest
-src=~/.bun/install/global/node_modules/@playwright/cli/skills/playwright-cli
+src=~/.bun/install/global/node_modules/playwright-core/lib/tools/skills/playwright-cli   # path printed by playwright-cli --help
 diff -r "$src" ~/.ai/skills/playwright-cli   # review, then copy the changed upstream files
 ```
 

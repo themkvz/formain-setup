@@ -19,7 +19,7 @@ Verify what the change actually does, not what the code or comments claim. Read-
 1. **Read the issue.** Description, acceptance criteria, and comments. Use the latest agreed behavior, not old proposals. Without an issue, take the expected behavior from the brief.
 2. **Plan the smallest complete scenario** for each criterion, plus the important failure cases.
 3. **Verify,** strongest evidence first:
-   - Browser: use the `x-playwright-cli` skill. Start or connect to the app, open the page, do the action as a real user would (not DOM-only assertions), check the visible result, reload when persistence matters, and check console errors and failed requests. Cover loading, error, and disabled states the change touches. Check accessibility basics (keyboard, focus, labels) when the change touches forms, dialogs, navigation, or controls. Use a fresh browser by default; attach to the user's running browser only when the brief asks or the flow needs their sign-in, then `detach`, never `close`.
+   - Browser: use the `x-playwright-cli` skill. Start or connect to the app, open the page, do the action as a real user would (not DOM-only assertions), check the visible result, reload when persistence matters, and check console errors and failed requests. Cover loading, error, and disabled states the change touches. Check accessibility basics (keyboard, focus, labels) when the change touches forms, dialogs, navigation, or controls. Use a fresh browser by default. For pages behind sign-in, use the skill's project profile flow (a test login, or the user signs in once in a headed window); attach to the user's running browser only as the skill's last resort, then `detach`, never `close`.
    - API: compare the displayed values with live responses.
    - Tests: run only the tests for the affected feature.
    - Code: read the source for what cannot be run.
@@ -50,7 +50,7 @@ Use the tracker's own status names; map these to the closest ones.
 * Test the changed behavior, not the whole product. Do not report unrelated old problems.
 * When the expected behavior is unclear, report the question instead of inventing a requirement.
 * Do not create follow-up issues. List them under Missing or Differs.
-* Screenshots are optional: take one when the brief asks for proof or when it explains a finding better than text. Save with `playwright-cli screenshot --filename=.playwright-cli/proof/<flow>-<state>.png` from the project root, kebab-case names. Do not stage or commit them.
+* Screenshots are optional: take one when the brief asks for proof or when it explains a finding better than text. Save with `playwright-cli screenshot --filename=.playwright-cli/proof/<flow>-<state>.png` from the project root, kebab-case names. When the brief asks for approval of a UI change, give before and after screenshots, and a video or trace for multi-step flows. Do not stage or commit them.
 * No secrets, personal data, or internal hostnames in the tracker or the report.
 
 ## Output

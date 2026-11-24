@@ -16,30 +16,35 @@ Everything below this section is the upstream skill from `@playwright/cli`; keep
 - A ref that times out is usually stale. Run `snapshot` or `find` again for fresh refs before retrying; do not retry the same ref.
 - Capture only what is needed (`screenshot e5`, `--filename=...`). Do not post-process images with Python or other tools.
 - Install or update with Bun: `bun add -g @playwright/cli@latest` (not `npm install -g`).
+- If any command prints "Update available for @playwright/cli", tell the user once in your reply, with the versions and the command above (it may change this skill's upstream part; see `docs/skills.md` in `~/.ai` for the re-sync). Do not update it yourself; carry on with the installed version.
 
-### Attach to an existing browser
+### Signed-in checks: project profile
 
-Use `attach` instead of `open` when the user asks to use their own or an already running browser, or when the flow needs sign-in or a human step (SSO, 2FA, captcha, magic link, extensions, open tabs). Otherwise launch a clean browser with `open`.
+For pages that need sign-in, use a persistent profile that `playwright-cli` owns, one per project. It never touches the user's own browser, needs no remote debugging, and survives restarts.
 
-Default for sign-in and human steps: the dedicated agent Google Chrome. The user keeps a separate Google Chrome only for agent UI checks, signed in to localhost, staging, and other test sites; their personal browser is a different app.
+- Profile: `~/.cache/playwright-cli/profiles/<project>`, where `<project>` is the repo folder name. Saved state: `~/.cache/playwright-cli/state/<project>.json`. Never put either inside the repo.
+- **Prefer a login with no human** when the app is the user's own (localhost, staging): a seeded test user, a dev-only login route, or an API call that sets the session. Use what the project already has; do not add one without asking.
+- **First sign-in or expired session:** open the profile headed, ask the user to sign in in that window with a test account (SSO, 2FA, captcha), wait for their "done", then close it:
+  `playwright-cli -s=auth open --headed --profile=~/.cache/playwright-cli/profiles/<project> <url>`
+  Never type the user's passwords or codes yourself.
+- **Every later check:** `playwright-cli -s=<name> open --profile=~/.cache/playwright-cli/profiles/<project> <url>` (headless). If the page shows the login screen, the session expired: do the step above again.
+- **One browser per profile.** If another session already holds the profile (`list` shows it, or `open` fails on a locked profile), reuse that session, or for parallel work save the state once and load it into a clean session:
+  `playwright-cli -s=<holder> state-save ~/.cache/playwright-cli/state/<project>.json`, then `playwright-cli -s=<name> open <url>` and `playwright-cli -s=<name> state-load ~/.cache/playwright-cli/state/<project>.json`. State keeps cookies and localStorage, not IndexedDB or sessionStorage; if the app needs those, wait for the profile.
+- Use only test accounts. If a page shows a personal account, stop and tell the user.
+- Confirm before any outward-facing action (submit, send, buy, delete) on a shared or real environment.
 
-- Attach with `playwright-cli attach --cdp=chrome -s=chrome`. One agent at a time: if `list` shows the `chrome` session in use by another task, wait or ask.
-- One-time setup (if attach fails, tell the user): open Google Chrome, enable "Allow remote debugging for this browser instance" at `chrome://inspect/#remote-debugging`, and sign in to the needed sites. After a Mac restart the user opens Chrome again, and you `attach` again.
-- Sign-in expired or the page needs a human (login, 2FA code, captcha, consent): stop and ask the user to do it in that Chrome window, then continue in the same tab. Never type the user's passwords or codes yourself.
-- Use only test accounts there. If a page shows a personal account, stop and tell the user.
+### Evidence for approval
 
-Other targets:
+When the user must approve a UI change, give evidence they can review without rerunning: a screenshot per changed state (before and after when you have both), and a video or trace for multi-step flows (`references/video-recording.md`, `references/tracing.md`). Save under `.playwright-cli/` in the project; never stage or commit it.
 
-- Find targets with `playwright-cli list --all`. Pick one target per `attach`:
-  - Running Chrome/Edge: `playwright-cli attach --cdp=chrome -s=chrome` (or `msedge`, `chrome-canary`, ...). The user must first enable "Allow remote debugging for this browser instance" at `chrome://inspect/#remote-debugging`.
-  - Browser started with `--remote-debugging-port=9222`, Electron, or a remote/cloud browser: `playwright-cli attach --cdp=http://localhost:9222 -s=<name>`.
-  - Playwright Extension installed: `playwright-cli attach --extension -s=<name>` (or `--extension=msedge`).
-  - Playwright server: `playwright-cli attach --endpoint=ws://localhost:3000 -s=<name>`.
-  - Paused test (`npx playwright test --debug=cli`): `playwright-cli attach <bound-name>`.
-- Always pass `-s=<name>` on `attach` and on every later command, so commands do not hit the `default` session.
-- If attach fails because remote debugging is off, ask the user to enable it. Do not quit, relaunch, or restart their browser yourself.
-- The browser holds the user's real profile. Work in a new tab (`tab-new`); do not close, reload, or navigate their existing tabs unless asked. Never run `delete-data`, `cookie-clear`, `localstorage-clear`, or `state-save` into the repo. Confirm before any outward-facing action (submit, send, buy, delete) on real accounts.
-- When done, run `playwright-cli -s=<name> detach`. Never use `close`, `close-all`, or `kill-all` on an attached session: they stop the user's browser.
+### Attach to a running browser (last resort)
+
+Use `attach` only when the user explicitly asks for their own running browser, or the flow cannot work in a profile (a browser extension, an existing tab's state, a login that blocks automated browsers). Say why before you attach.
+
+- Find targets with `playwright-cli list --all`. Running Chrome/Edge: `playwright-cli attach --cdp=chrome -s=<name>` (the user must enable "Allow remote debugging for this browser instance" at `chrome://inspect/#remote-debugging`). Other targets: `--cdp=http://localhost:9222`, `--extension`, `--endpoint=ws://...`, or a paused test's bound name.
+- If attach fails, tell the user what to enable. Do not quit, relaunch, or restart their browser.
+- Always pass `-s=<name>`. Work in a new tab (`tab-new`); do not close, reload, or navigate their tabs. Never run `delete-data`, `cookie-clear`, `localstorage-clear`, or `state-save` into the repo.
+- When done, `playwright-cli -s=<name> detach`. Never `close`, `close-all`, or `kill-all` an attached session: they stop the user's browser.
 
 ## Quick start
 

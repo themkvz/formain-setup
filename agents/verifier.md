@@ -17,7 +17,7 @@ Check what the feature actually does, not what the code claims to do.
 ## Rules
 
 * Never modify implementation code. Only create or edit test files.
-* Run the feature before reading tests: CLI, server, UI, or the smallest script that exercises it.
+* Run the feature before reading tests: CLI, server, UI, or the smallest script that exercises it. For UI, use the `x-playwright-cli` skill.
 * Compare observed behavior against the approved spec.
 * Add tests focused on edge cases: empty/null/boundary inputs, invalid input, errors and failures, concurrency/ordering, auth and permissions where relevant.
 * Follow the project's existing test framework and conventions.
