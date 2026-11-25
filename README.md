@@ -9,7 +9,7 @@ Write your agent instructions, skills, and subagents once in `~/.ai`, and link t
 ## Key features
 
 * **One global instruction file.** `GLOBAL.md` is linked as `CLAUDE.md`, `AGENTS.md`, and `GEMINI.md`.
-* **Shared skills.** 15 skills under `skills/`, covering docs lookup, test authoring, BFF authentication, design patterns, browser checks, release checks, issue tracking, codebase refactoring, and more. See [docs/skills.md](docs/skills.md).
+* **Shared skills.** Skills under `skills/`, covering docs lookup, test authoring, BFF authentication, design patterns, browser checks, release checks, issue tracking, codebase refactoring, and more. See [docs/skills.md](docs/skills.md).
 * **Shared subagents.** Builder, debugger, project manager, QA assistant, security reviewer, and verifier. See [docs/agents.md](docs/agents.md).
 * **Codex agent generation.** Markdown agents are converted to the TOML format Codex needs.
 * **Safe bootstrap.** A dry-run mode, plus backups of files it replaces.
@@ -75,7 +75,7 @@ What `bootstrap.sh` sets up for each tool:
 Requirements:
 
 * Bash, Git, and a system that supports symlinks. The scripts expect the repository at `~/.ai`.
-* Optional, for `doctor.sh`: `jq` (JSON checks), Python 3.11+ (`tomllib`, for TOML checks), and `shellcheck`.
+* Optional, for `doctor.sh`: `jq` (JSON checks), and Python 3.11+ (`tomllib`, for TOML checks).
 * Optional, used by some skills: `ctx7` (Context7 CLI), `playwright-cli`, and `rtk`.
 
 The scripts have been run on Linux with Bash 5.2 and on macOS with the system Bash 3.2. Windows isn't supported natively, because bootstrap relies on Bash and symlinks in your home folder.
@@ -156,6 +156,7 @@ Rollback: run `uninstall.sh` to remove the links, then run `bootstrap.sh` again 
 ├── skills/<name>/SKILL.md        shared skills, some with references/
 ├── skills.local/                 gitignored local skill overlays
 ├── scripts/
+│   ├── lib.sh                    shared paths, markers, and helpers (sourced)
 │   ├── doctor.sh                 health check
 │   ├── test.sh                   smoke test in a throwaway home folder
 │   ├── uninstall.sh              removes links and generated agents, restores backups
@@ -170,10 +171,6 @@ CI runs syntax checks and the smoke test on Linux and macOS, and ShellCheck on L
 
 ```bash
 ~/.ai/scripts/test.sh
-```
-
-```bash
-shellcheck ~/.ai/bootstrap.sh ~/.ai/scripts/*.sh
 ```
 
 ```bash

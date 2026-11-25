@@ -25,7 +25,7 @@ jobs:
 
       - name: ShellCheck
         if: runner.os == 'Linux'
-        run: shellcheck bootstrap.sh scripts/*.sh
+        run: shellcheck -x bootstrap.sh scripts/*.sh
 
       - name: Smoke test
         run: scripts/test.sh

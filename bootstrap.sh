@@ -2,18 +2,8 @@
 
 set -euo pipefail
 
-AI_HOME="$HOME/.ai"
-DRY_RUN="${DRY_RUN:-0}"
-
-run() {
-  if [[ "$DRY_RUN" == "1" ]]; then
-    printf '[dry-run]'
-    printf ' %q' "$@"
-    printf '\n'
-  else
-    "$@"
-  fi
-}
+# shellcheck source=scripts/lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/scripts/lib.sh"
 
 if [[ ! -f "$AI_HOME/GLOBAL.md" ]]; then
   echo "Missing $AI_HOME/GLOBAL.md" >&2
@@ -29,11 +19,8 @@ backup_and_link() {
   if [[ -L "$target" ]]; then
     run rm "$target"
   elif [[ -e "$target" ]]; then
-    local backup="${target}.backup"
-
-    if [[ -e "$backup" || -L "$backup" ]]; then
-      backup="${target}.backup.$(date +%Y%m%d%H%M%S)"
-    fi
+    local backup
+    backup="$(next_backup_path "$target")"
 
     echo "Backing up: $target -> $backup"
     run mv "$target" "$backup"
@@ -69,56 +56,44 @@ prune_dangling() {
   [[ -d "$dir" ]] || return 0
 
   for link in "$dir"/*; do
-    [[ -L "$link" && ! -e "$link" ]] || continue
-    [[ "$(readlink "$link")" == "$AI_HOME"/* ]] || continue
+    owned_link "$link" && [[ ! -e "$link" ]] || continue
 
     run rm "$link"
     echo "Pruned: $link"
   done
 }
 
-playwright_config_content() {
-  local pw_dir="${TMPDIR:-/tmp}"
-
-  pw_dir="${pw_dir%/}"
-  printf '{\n  "outputDir": "%s/playwright-cli"\n}\n' "$pw_dir"
-}
-
 echo "==> Global context"
 
-backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.claude/CLAUDE.md"
-backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.codex/AGENTS.md"
-backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.gemini/GEMINI.md"
+for target in "${GLOBAL_CONTEXT_TARGETS[@]}"; do
+  backup_and_link "$AI_HOME/GLOBAL.md" "$target"
+done
 
 echo
 echo "==> Shared skills"
 
-for skill in "$AI_HOME"/skills/* "$AI_HOME"/skills.local/*; do
-  [[ -d "$skill" ]] || continue
-
+while IFS= read -r skill; do
   name="$(basename "$skill")"
 
-  link_dir "$skill" "$HOME/.claude/skills/x-$name"
-  link_dir "$skill" "$HOME/.gemini/config/skills/x-$name"
-  link_dir "$skill" "$HOME/.agents/skills/x-$name"
-done
+  for skill_link_dir in "${SKILL_LINK_DIRS[@]}"; do
+    link_dir "$skill" "$skill_link_dir/x-$name"
+  done
+done < <(skill_sources)
 
-prune_dangling "$HOME/.claude/skills"
-prune_dangling "$HOME/.gemini/config/skills"
-prune_dangling "$HOME/.agents/skills"
+for skill_link_dir in "${SKILL_LINK_DIRS[@]}"; do
+  prune_dangling "$skill_link_dir"
+done
 
 echo
 echo "==> Shared agents"
 
-for agent in "$AI_HOME"/agents/*.md "$AI_HOME"/agents.local/*.md; do
-  [[ -f "$agent" ]] || continue
-
+while IFS= read -r agent; do
   name="$(basename "$agent")"
 
-  backup_and_link "$agent" "$HOME/.claude/agents/$name"
-done
+  backup_and_link "$agent" "$CLAUDE_AGENT_DIR/$name"
+done < <(agent_sources)
 
-prune_dangling "$HOME/.claude/agents"
+prune_dangling "$CLAUDE_AGENT_DIR"
 
 echo
 echo "==> Scripts"
@@ -131,48 +106,31 @@ done
 echo
 echo "==> Playwright CLI config"
 
-pw_config="$HOME/.playwright/cli.config.json"
-
-if [[ ! -e "$pw_config" && ! -L "$pw_config" ]]; then
-  run mkdir -p "$(dirname "$pw_config")"
+if [[ ! -e "$PLAYWRIGHT_CONFIG" && ! -L "$PLAYWRIGHT_CONFIG" ]]; then
+  run mkdir -p "$(dirname "$PLAYWRIGHT_CONFIG")"
 
   if [[ "$DRY_RUN" == "1" ]]; then
-    echo "[dry-run] would write $pw_config"
+    echo "[dry-run] would write $PLAYWRIGHT_CONFIG"
   else
-    playwright_config_content > "$pw_config"
-    echo "Wrote: $pw_config"
+    playwright_config_content > "$PLAYWRIGHT_CONFIG"
+    echo "Wrote: $PLAYWRIGHT_CONFIG"
   fi
-elif cmp -s "$pw_config" <(playwright_config_content); then
-  echo "Up to date: $pw_config"
+elif cmp -s "$PLAYWRIGHT_CONFIG" <(playwright_config_content); then
+  echo "Up to date: $PLAYWRIGHT_CONFIG"
 else
-  echo "Skip existing: $pw_config"
+  echo "Skip existing: $PLAYWRIGHT_CONFIG"
 fi
 
 echo
-echo "==> Gemini agents"
+echo "==> Generated agents"
 
-if [[ -x "$AI_HOME/scripts/sync-gemini-agents.sh" ]]; then
+for sync_script in sync-gemini-agents.sh sync-codex-agents.sh; do
   if [[ "$DRY_RUN" == "1" ]]; then
-    echo "[dry-run] would sync Gemini agents"
+    echo "[dry-run] would run $sync_script"
   else
-    "$AI_HOME/scripts/sync-gemini-agents.sh"
+    bash "$AI_HOME/scripts/$sync_script"
   fi
-else
-  echo "Skip: sync-gemini-agents.sh not found or not executable"
-fi
-
-echo
-echo "==> Codex agents"
-
-if [[ -x "$AI_HOME/scripts/sync-codex-agents.sh" ]]; then
-  if [[ "$DRY_RUN" == "1" ]]; then
-    echo "[dry-run] would sync Codex agents"
-  else
-    "$AI_HOME/scripts/sync-codex-agents.sh"
-  fi
-else
-  echo "Skip: sync-codex-agents.sh not found or not executable"
-fi
+done
 
 echo
 
