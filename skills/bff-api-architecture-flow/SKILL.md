@@ -3,7 +3,9 @@ name: x-bff-api-architecture-flow
 description: >
   Auth design and review for a web BFF (React Router v7+ Framework Mode or similar) in front of
   a REST API, optionally with an Expo client: sessions, access/refresh tokens, rotation, logout,
-  token storage, 401/403. Also use when users get "randomly logged out".
+  token storage, 401/403. Also for users who get "randomly logged out". Manual: suggest it, and
+  run it after the user approves.
+disable-model-invocation: true
 ---
 
 # Auth Architecture: BFF + API + Mobile

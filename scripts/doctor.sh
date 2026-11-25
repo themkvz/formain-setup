@@ -121,6 +121,11 @@ check_skill() {
 
   ok "$name"
 
+  if grep -q '^disable-model-invocation: true' "$skill/SKILL.md" &&
+     ! grep -qs 'allow_implicit_invocation: false' "$skill/agents/openai.yaml"; then
+    fail "$name is manual-only but has no agents/openai.yaml for Codex"
+  fi
+
   check_link "$HOME/.claude/skills/x-$name" "$skill"
   check_link "$HOME/.gemini/config/skills/x-$name" "$skill"
   check_link "$HOME/.agents/skills/x-$name" "$skill"

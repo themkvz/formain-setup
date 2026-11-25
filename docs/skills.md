@@ -2,7 +2,9 @@
 
 Shared skills live in `skills/<name>/SKILL.md`. `bootstrap.sh` links each one as `x-<name>` into `~/.claude/skills/`, `~/.gemini/config/skills/`, and `~/.agents/skills/`.
 
-Skills marked **user-invoked only** set `disable-model-invocation: true`: the agent will not load them on its own, you run them with `/x-<name>`.
+Skills marked **user-invoked only** set `disable-model-invocation: true` (Claude Code, agy) and ship `agents/openai.yaml` with `allow_implicit_invocation: false` (Codex): the agent will not load them on its own, you run them with `/x-<name>`. `doctor.sh` fails when a manual skill misses the Codex file.
+
+Stack-specific skills are manual too. Their hint lives in the project that uses the stack, not in global context (see the BFF hint below).
 
 ## `x-preferred-stack`
 
@@ -47,7 +49,7 @@ ctx7 docs <library-id> "<query>"
 
 ## `x-bff-api-architecture-flow`
 
-Chooses authentication architecture for React Router v7+ Framework Mode BFFs, external REST/Spring Boot/Elysia APIs, Valkey-backed web sessions, PostgreSQL-backed refresh tokens, and Expo mobile clients.
+User-invoked only. Chooses authentication architecture for React Router v7+ Framework Mode BFFs, external REST/Spring Boot/Elysia APIs, Valkey-backed web sessions, PostgreSQL-backed refresh tokens, and Expo mobile clients.
 
 Covers three modes:
 
@@ -63,7 +65,7 @@ Use when implementing login, registration, session handling, access/refresh toke
 
 ## `x-bff-api-client`
 
-Wires the server-side API client inside a React Router v7+ Framework Mode BFF.
+User-invoked only. Wires the server-side API client inside a React Router v7+ Framework Mode BFF.
 
 ```text
 createApiClient()   per-request factory
@@ -76,6 +78,18 @@ route loader        reads client from context
 The route never builds a client and never sees a token, so auth headers, `401` handling, correlation IDs, timeouts, and logging stay in one file.
 
 Use when adding an API call to a loader, action, or resource route, adding an endpoint wrapper, creating a protected or guest route layout, writing auth middleware, or testing a wrapper or loader.
+
+### BFF project hint
+
+Paste into the `AGENTS.md` of a React Router BFF project, so the agent suggests these skills there:
+
+```md
+## Skills
+
+Before work on auth, sessions, tokens, or the server-side API client, suggest
+`/x-bff-api-architecture-flow` (auth design) or `/x-bff-api-client` (API client wiring),
+and run it only after the user approves.
+```
 
 ## `x-create-issue`
 

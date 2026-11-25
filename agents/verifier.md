@@ -4,10 +4,10 @@ description: Verifies an implemented feature by running it first, then adding ed
 tools: Read, Edit, Write, Bash, Skill
 model: opus
 effort: medium
-codex-model: gpt-6.1-sol
+codex-model: gpt-6.2-sol
 codex-effort: high
 codex-sandbox: workspace-write
-gemini-model: pro
+gemini-model: inherit
 ---
 
 # Verifier

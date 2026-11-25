@@ -4,9 +4,9 @@ description: Reviews security-sensitive changes for concrete exploitable vulnera
 tools: Read, Bash, Skill
 model: opus
 effort: medium
-codex-model: gpt-6.1-sol
+codex-model: gpt-6.2-sol
 codex-effort: high
-gemini-model: pro
+gemini-model: inherit
 ---
 
 # Security Reviewer

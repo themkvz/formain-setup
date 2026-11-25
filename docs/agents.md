@@ -48,3 +48,12 @@ The generated TOML uses `codex-sandbox` from the frontmatter and defaults to `sa
 ## Model settings
 
 Model, effort, tools, and Codex sandbox are set in each file's frontmatter (`model`/`effort` for Claude, `codex-*` for Codex, `gemini-model` for Antigravity: `inherit`, `flash_lite`, `flash`, or `pro`).
+
+Current picks:
+
+| Agents | Claude | Codex | Antigravity |
+| --- | --- | --- | --- |
+| `builder`, `project-manager`, `qa-assistant` | `haiku` (Haiku 5.5) / high | `gpt-6.1-terra` / high | `flash` |
+| `debugger`, `security-reviewer`, `verifier` | `opus` (Opus 5.5) / medium | `gpt-6.2-sol` / high | `inherit` |
+
+Antigravity agents accept only a tier, not a model ID (`agy plugin validate` rejects `gemini-4-neon`), and no per-agent effort. `inherit` runs the session model, so set the session to Gemini 4 Neon to get Neon. The model behind `flash` is chosen by Antigravity's server; Hydrogen can't be pinned per agent.

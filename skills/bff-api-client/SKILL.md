@@ -3,7 +3,9 @@ name: x-bff-api-client
 description: >
   Wiring the server-side API client in a React Router v7+ Framework Mode BFF: per-request
   client factory, context, auth middleware, endpoint wrappers, loader/action errors. Use when
-  a loader, action, or resource route calls the API, or when adding auth middleware.
+  a loader, action, or resource route calls the API, or when adding auth middleware. Manual:
+  suggest it, and run it after the user approves.
+disable-model-invocation: true
 ---
 
 # BFF API Client
