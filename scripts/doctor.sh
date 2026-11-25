@@ -88,6 +88,13 @@ check_dangling() {
   done
 }
 
+playwright_config_content() {
+  local pw_dir="${TMPDIR:-/tmp}"
+
+  pw_dir="${pw_dir%/}"
+  printf '{\n  "outputDir": "%s/playwright-cli"\n}\n' "$pw_dir"
+}
+
 section "Shared configuration"
 
 for file in \
@@ -247,6 +254,20 @@ if command -v agy >/dev/null 2>&1; then
       warn "agy did not load agent: $agent_id"
     fi
   done
+fi
+
+section "Playwright CLI config"
+
+pw_config="$HOME/.playwright/cli.config.json"
+
+if [[ ! -e "$pw_config" && ! -L "$pw_config" ]]; then
+  warn "Missing: $pw_config (run bootstrap.sh)"
+elif [[ -f "$pw_config" ]] && cmp -s "$pw_config" <(playwright_config_content); then
+  ok "$pw_config"
+elif grep -q 'outputDir' "$pw_config" 2>/dev/null; then
+  warn "Custom config, not managed by ~/.ai: $pw_config"
+else
+  warn "No outputDir in $pw_config: playwright-cli writes output into each project"
 fi
 
 section "Scripts"

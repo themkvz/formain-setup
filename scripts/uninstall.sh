@@ -20,6 +20,13 @@ ai_link() {
   [[ -L "$1" && "$(readlink "$1")" == "$AI_HOME"/* ]]
 }
 
+playwright_config_content() {
+  local pw_dir="${TMPDIR:-/tmp}"
+
+  pw_dir="${pw_dir%/}"
+  printf '{\n  "outputDir": "%s/playwright-cli"\n}\n' "$pw_dir"
+}
+
 # Remove an item, then move its original back from P.backup.
 remove_item() {
   local path="$1" backup
@@ -95,6 +102,22 @@ do
   run rmdir "$dir"
   echo "Removed empty folder: $dir"
 done
+
+echo
+echo "==> Playwright CLI config"
+
+pw_config="$HOME/.playwright/cli.config.json"
+pw_dir="$HOME/.playwright"
+
+if [[ -f "$pw_config" ]] && cmp -s "$pw_config" <(playwright_config_content); then
+  echo "Removed: $pw_config"
+  run rm "$pw_config"
+fi
+
+if [[ -d "$pw_dir" && ! -L "$pw_dir" && -z "$(ls -A "$pw_dir")" ]]; then
+  run rmdir "$pw_dir"
+  echo "Removed empty folder: $pw_dir"
+fi
 
 echo
 if [[ -n "$LEFTOVERS" ]]; then

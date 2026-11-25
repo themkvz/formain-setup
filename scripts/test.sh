@@ -31,7 +31,7 @@ assert_link() {
 echo "==> Dry run changes nothing"
 
 env HOME="$TEST_HOME" DRY_RUN=1 "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
-for dir in .claude .codex .gemini .agents; do
+for dir in .claude .codex .gemini .agents .playwright; do
   [[ ! -e "$TEST_HOME/$dir" ]] || die "Dry run created $dir"
 done
 pass "dry run wrote nothing"
@@ -58,6 +58,10 @@ pass "global context links"
 [[ "$(cat "$TEST_HOME/.codex/agents/builder.toml.backup")" == "custom codex builder" ]] || die "Codex agent backup missing"
 pass "existing files backed up"
 
+pw_config="$TEST_HOME/.playwright/cli.config.json"
+grep -q '"outputDir"' "$pw_config" || die "Playwright CLI config has no outputDir"
+pass "Playwright CLI config written"
+
 for skill in "$TEST_HOME"/.ai/skills/*/; do
   name="$(basename "$skill")"
   for dir in .claude/skills .gemini/config/skills .agents/skills; do
@@ -77,11 +81,13 @@ pass "agent links, Gemini agents, and Codex agents synced even without initial +
 
 echo "==> Bootstrap is safe to run twice"
 
+pw_before="$(cat "$pw_config")"
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 assert_link "$TEST_HOME/.claude/CLAUDE.md" "$TEST_HOME/.ai/GLOBAL.md"
 [[ "$(cat "$TEST_HOME/.codex/AGENTS.md.backup")" == "old instructions" ]] || die "Backup changed"
 [[ "$(cat "$TEST_HOME/.gemini/config/agents/builder/agent.md.backup")" == "custom gemini builder" ]] || die "Gemini backup changed"
 [[ "$(cat "$TEST_HOME/.codex/agents/builder.toml.backup")" == "custom codex builder" ]] || die "Codex backup changed"
+[[ "$(cat "$pw_config")" == "$pw_before" ]] || die "Playwright CLI config changed"
 pass "second run"
 
 echo "==> Bootstrap prunes leftovers and keeps foreign files"
@@ -305,6 +311,21 @@ done
 [[ -L "$TEST_HOME/.claude/skills/uninstall-foreign" ]] || die "Foreign symlink was removed"
 [[ -f "$TEST_HOME/.claude/skills/uninstall-mine" ]] || die "Unmarked file was removed"
 [[ ! -e "$TEST_HOME/.agents" ]] || die "Empty .agents folder left behind"
+[[ ! -e "$pw_config" ]] || die "Generated Playwright config remains"
+[[ ! -e "$TEST_HOME/.playwright" ]] || die "Empty .playwright folder left behind"
 pass "uninstall removes links and generated agents, restores backups, keeps foreign files"
+
+echo "==> Foreign Playwright config is kept"
+
+foreign_home="$TEST_HOME/foreign-home"
+mkdir -p "$foreign_home/.playwright"
+cp -R "$TEST_HOME/.ai" "$foreign_home/.ai"
+echo '{"outputDir": "/custom"}' > "$foreign_home/.playwright/cli.config.json"
+env HOME="$foreign_home" "$foreign_home/.ai/bootstrap.sh" >/dev/null
+[[ "$(cat "$foreign_home/.playwright/cli.config.json")" == '{"outputDir": "/custom"}' ]] ||
+  die "bootstrap.sh changed foreign Playwright config"
+env HOME="$foreign_home" "$foreign_home/.ai/scripts/uninstall.sh" >/dev/null
+[[ -f "$foreign_home/.playwright/cli.config.json" ]] || die "uninstall.sh removed foreign Playwright config"
+pass "foreign Playwright config kept"
 
 printf '\nAll %d checks passed.\n' "$CHECKS"

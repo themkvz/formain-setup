@@ -147,6 +147,8 @@ Provides browser automation for frontend validation:
 * signed-in checks through a per-project persistent profile
 * screenshots, video, and traces as evidence for approving UI changes
 
+Auto-named output goes to the temp folder set in `~/.playwright/cli.config.json` by bootstrap, and only evidence files go into the project's `.playwright-cli/proof/`.
+
 Signed-in pages: the agent prefers a login with no human (seeded test user, dev-only login route). Otherwise it opens `~/.cache/playwright-cli/profiles/<project>` in a headed window once, you sign in there with a test account (SSO, 2FA, captcha), and later checks run headless with the same profile. When the session expires, the agent asks you to sign in again. Parallel agents share the login through a saved state file in `~/.cache/playwright-cli/state/`. Your own browser is never touched.
 
 Attaching to a running browser (`attach --cdp=chrome`, extension) is a last resort, only when you ask for it or a profile cannot work.

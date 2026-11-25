@@ -15,6 +15,7 @@ Everything below this section is the upstream skill from `@playwright/cli`; keep
 - Write `playwright-cli` in full in every command. Do not put it in a shell variable (`P=playwright-cli; $P open`): zsh does not word-split it, so the call fails with `command not found`.
 - A ref that times out is usually stale. Run `snapshot` or `find` again for fresh refs before retrying; do not retry the same ref.
 - Capture only what is needed (`screenshot e5`, `--filename=...`). Do not post-process images with Python or other tools.
+- Auto-named output (snapshots, console logs, traces) goes to `outputDir` from `~/.playwright/cli.config.json`, which `~/.ai/bootstrap.sh` sets to a temp folder outside the project. Do not copy it into the project. Write a file into the project only as evidence for the user, with an explicit `--filename=.playwright-cli/proof/<flow>-<state>.png`. When the task ends, delete the proof files you created unless the user still has to review them; then list their paths in your reply.
 - Install or update with Bun: `bun add -g @playwright/cli@latest` (not `npm install -g`).
 - If any command prints "Update available for @playwright/cli", tell the user once in your reply, with the versions and the command above (it may change this skill's upstream part; see `docs/skills.md` in `~/.ai` for the re-sync). Do not update it yourself; carry on with the installed version.
 
@@ -35,7 +36,7 @@ For pages that need sign-in, use a persistent profile that `playwright-cli` owns
 
 ### Evidence for approval
 
-When the user must approve a UI change, give evidence they can review without rerunning: a screenshot per changed state (before and after when you have both), and a video or trace for multi-step flows (`references/video-recording.md`, `references/tracing.md`). Save under `.playwright-cli/` in the project; never stage or commit it.
+When the user must approve a UI change, give evidence they can review without rerunning: a screenshot per changed state (before and after when you have both), and a video or trace for multi-step flows (`references/video-recording.md`, `references/tracing.md`). Save screenshots and videos under `.playwright-cli/proof/` in the project; never stage or commit them. A trace stays in `outputDir`; give its absolute path.
 
 ### Attach to a running browser (last resort)
 

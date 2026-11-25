@@ -77,6 +77,13 @@ prune_dangling() {
   done
 }
 
+playwright_config_content() {
+  local pw_dir="${TMPDIR:-/tmp}"
+
+  pw_dir="${pw_dir%/}"
+  printf '{\n  "outputDir": "%s/playwright-cli"\n}\n' "$pw_dir"
+}
+
 echo "==> Global context"
 
 backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.claude/CLAUDE.md"
@@ -120,6 +127,26 @@ for script in "$AI_HOME"/scripts/*.sh; do
   [[ -f "$script" ]] || continue
   run chmod +x "$script"
 done
+
+echo
+echo "==> Playwright CLI config"
+
+pw_config="$HOME/.playwright/cli.config.json"
+
+if [[ ! -e "$pw_config" && ! -L "$pw_config" ]]; then
+  run mkdir -p "$(dirname "$pw_config")"
+
+  if [[ "$DRY_RUN" == "1" ]]; then
+    echo "[dry-run] would write $pw_config"
+  else
+    playwright_config_content > "$pw_config"
+    echo "Wrote: $pw_config"
+  fi
+elif cmp -s "$pw_config" <(playwright_config_content); then
+  echo "Up to date: $pw_config"
+else
+  echo "Skip existing: $pw_config"
+fi
 
 echo
 echo "==> Gemini agents"
