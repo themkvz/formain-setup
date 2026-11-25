@@ -95,18 +95,20 @@ and run it only after the user approves.
 
 User-invoked only. Creates one concise issue from the current conversation using a connected tracker MCP integration or an installed, authenticated CLI. Matches an explicit format, an applicable issue template, or recent relevant issues before using its fallback format.
 
+The fallback body fits the work: What to build and Acceptance criteria for features and tasks, What happened, Expected, and Environment for bugs, with no default Context. It fills tracker fields from the tracker's metadata, using only existing values, and sets native relations (parent, blocks, relates to, duplicate) and attachments.
+
 It supports Linear, Jira, Azure DevOps, GitHub, GitLab, and other configured trackers. If no publishing tool is available, it returns a title and body ready to paste.
 
 ## `x-issue-comment`
 
-User-invoked only. Posts one concise, factual comment per tracker issue using the same Context, Changes, Checks, and optional Notes structure.
+User-invoked only. Posts one concise, factual comment per tracker issue. Uses Changes, Checks, and optional Notes, with Context only when the comment covers part of the issue or the issue text is out of date.
 
 ```text
 /x-issue-comment        concise comment
 /x-issue-comment qa     comment with detailed, reproducible checks
 ```
 
-Checks distinguish observed results from suggested QA steps. Empty Checks and Notes are omitted. Uses the same tracker and tool detection as `x-create-issue`; prints the comment ready to paste if no tool is available.
+Checks distinguish observed results from suggested QA steps. Empty Context, Checks, and Notes are omitted. Uses the same tracker and tool detection as `x-create-issue`; prints the comment ready to paste if no tool is available.
 
 ## `x-design-patterns`
 

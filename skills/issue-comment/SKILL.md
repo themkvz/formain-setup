@@ -31,13 +31,18 @@ Readers are product managers, leads, other developers, and QA. Most of them read
 - In `Checks`, report useful observed product behavior. Omit raw command lists and environment inventories such as `Перевірено: tests/ts/check, локальний dev server (…)`. Omit skipped or pending checks such as `Not run on a device or against the backend yet`, `Not checked on staging`, and `Не перевірено: …`. Apply this in every language, including `qa` mode. If a remaining check needs the reader's action, write it as `To check` with a reproducible action and expected result.
 - Omit branch, commit, push, deployment, delivery, readiness, and workflow status, including standalone notes such as `Not deployed` and `Not committed`. Put useful evidence or QA environment links in Notes.
 - Never include secrets, tokens, `.env` values, personal data, customer names, or internal hostnames (issue links and URLs the user gave are fine).
+- Use the real names of UI elements, flags, and commands. Use one name for each thing everywhere.
+- Be specific and give the number: not "export is slow" but "export takes 40 s for 10k rows".
+- One thought per sentence. Use active voice and short sentences.
+- Use straight quotes. No em dashes. No AI vocabulary such as crucial, enhance, leverage, robust, seamless, or delve.
+- Cut any sentence that could appear unchanged in another project's comment.
 
 ## Format
 
 Use these labels and order for every comment. Keep each section short.
 
 ```markdown
-**Context**
+**Context** (optional)
 <One short sentence naming the affected behavior or problem.>
 
 **Changes**
@@ -51,6 +56,8 @@ Use these labels and order for every comment. Keep each section short.
 - <Actionable limit, prerequisite, or useful evidence or QA environment link, if needed.>
 ```
 
+Use Context only when the comment covers part of the issue or the issue text is out of date. Otherwise start with **Changes**.
+
 Omit Checks when there is no useful evidence or required QA step. The `qa` argument requests detailed, reproducible checks in this same structure: include the role, data, action, and expected result needed to repeat each step. Include targeted edge cases and relevant regression checks when useful.
 
 Omit Notes when there are no actionable limits, prerequisites, or useful links. Preserve safety instructions, for example: "Back up first. Then run migration: it drops the column." Put useful evidence or QA environment links in Notes.
@@ -58,9 +65,6 @@ Omit Notes when there are no actionable limits, prerequisites, or useful links. 
 Illustrative example (not a claim about an actual issue):
 
 ```markdown
-**Context**
-CSV export omitted archived orders.
-
 **Changes**
 - CSV export includes archived orders in the selected date range.
 

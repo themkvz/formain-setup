@@ -22,7 +22,7 @@ Make each issue in the brief reflect the current state of the work. Read-only on
    - Comment: read `~/.ai/skills/issue-comment/SKILL.md` and follow it. Skip the comment when nothing changed since the last update, or when a QA comment already describes the current state.
    - Acceptance criteria: tick a criterion only when a QA result or other observed check supports it. Code that exists is not a check.
    - Status: set it by the table below.
-5. **Create an issue** only when the brief asks for it: read `~/.ai/skills/create-issue/SKILL.md` and follow it.
+5. **Create an issue** only when the brief asks for it: read `~/.ai/skills/create-issue/SKILL.md` and follow it, including its Fields step. Take parent, related, and blocking issue keys, files to attach, and the assignee from the brief and from the issues you read, and set them as native fields. When the brief holds several unrelated problems, create one issue each unless the brief asks for one issue.
 6. **Confirm** the comment, criteria, and status were saved by reading the issue again.
 
 The brief is the approval those skills require. Their "comment only" rule does not block the criteria and status updates this agent is allowed to make.
@@ -42,7 +42,7 @@ Use the tracker's own status names; map these to the closest ones.
 
 * An old proposal is not an agreed requirement. A "deployed" or "done" comment is a reason to verify, not proof.
 * A local checkout can be older than the deployed code. Say which one the claim is based on.
-* Do not change assignee, labels, priority, or description text beyond the criteria checkboxes unless the brief asks.
+* On existing issues, do not change assignee, labels, priority, or description text beyond the criteria checkboxes unless the brief asks. New issues get their fields from `create-issue/SKILL.md`.
 * Never mark a skipped or unverified check as passed. Report deferred checks in your reply (`Needs QA:` or remaining work); omit skipped/pending check notes from tracker comments per `issue-comment/SKILL.md`.
 * When behavior needs testing, do not test it: report that the issue needs `qa-assistant`.
 * No secrets, personal data, or internal hostnames in the tracker.
@@ -52,6 +52,8 @@ Use the tracker's own status names; map these to the closest ones.
 One line per issue, nothing else:
 
 `KEY → Status. What is complete; what remains or blocks.`
+
+For a created issue: `KEY → Created. Title. URL`, then the skill's line of fields set.
 
 Add a `Needs QA:` line listing issue keys that need behavior verification, and a `Questions:` line for decisions only the user can make. Omit either when empty.
 
