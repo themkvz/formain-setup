@@ -1,6 +1,6 @@
 # Skills
 
-Shared skills live in `skills/<name>/SKILL.md`. `bootstrap.sh` links each one as `x-<name>` into `~/.claude/skills/`, `~/.gemini/config/skills/`, `~/.agents/skills/`, and `~/.agent/skills/`.
+Shared skills live in `skills/<name>/SKILL.md`. `bootstrap.sh` links each one as `x-<name>` into `~/.claude/skills/`, `~/.gemini/config/skills/`, and `~/.agents/skills/`.
 
 Skills marked **user-invoked only** set `disable-model-invocation: true`: the agent will not load them on its own, you run them with `/x-<name>`.
 

@@ -106,7 +106,6 @@ section "Global context links"
 check_link "$HOME/.claude/CLAUDE.md" "$AI_HOME/GLOBAL.md"
 check_link "$HOME/.codex/AGENTS.md" "$AI_HOME/GLOBAL.md"
 check_link "$HOME/.gemini/GEMINI.md" "$AI_HOME/GLOBAL.md"
-check_link "$HOME/.copilot/copilot-instructions.md" "$AI_HOME/GLOBAL.md"
 
 section "Shared skills"
 
@@ -125,7 +124,6 @@ check_skill() {
   check_link "$HOME/.claude/skills/x-$name" "$skill"
   check_link "$HOME/.gemini/config/skills/x-$name" "$skill"
   check_link "$HOME/.agents/skills/x-$name" "$skill"
-  check_link "$HOME/.agent/skills/x-$name" "$skill"
 }
 
 for skill in "$AI_HOME"/skills/*; do
@@ -142,7 +140,6 @@ done
 check_dangling "$HOME/.claude/skills"
 check_dangling "$HOME/.gemini/config/skills"
 check_dangling "$HOME/.agents/skills"
-check_dangling "$HOME/.agent/skills"
 
 section "Shared agents"
 
@@ -232,6 +229,21 @@ for codex_agent in "$HOME"/.codex/agents/*.toml; do
   fail "Orphan Codex agent: $codex_agent (run sync-codex-agents.sh)"
 done
 
+if command -v agy >/dev/null 2>&1; then
+  agy_agents="$(agy agents 2>/dev/null || true)"
+
+  for agent in "$AI_HOME"/agents/*.md "$AI_HOME"/agents.local/*.md; do
+    [[ -f "$agent" ]] || continue
+    agent_id="$(basename "$agent" .md)"
+
+    if grep -Fxq -- "$agent_id" <<<"$agy_agents"; then
+      ok "agy loads agent: $agent_id"
+    else
+      warn "agy did not load agent: $agent_id"
+    fi
+  done
+fi
+
 section "Scripts"
 
 for script in "$AI_HOME"/scripts/*.sh "$AI_HOME/bootstrap.sh"; do
@@ -278,16 +290,6 @@ if command -v jq >/dev/null 2>&1; then
   )
 
   for file in "${json_files[@]}"; do
-    [[ -f "$file" ]] || continue
-
-    if jq empty "$file" >/dev/null 2>&1; then
-      ok "$file"
-    else
-      fail "Invalid JSON: $file"
-    fi
-  done
-
-  for file in "$HOME"/.copilot/hooks/*.json; do
     [[ -f "$file" ]] || continue
 
     if jq empty "$file" >/dev/null 2>&1; then

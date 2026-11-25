@@ -82,7 +82,6 @@ echo "==> Global context"
 backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.claude/CLAUDE.md"
 backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.codex/AGENTS.md"
 backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.gemini/GEMINI.md"
-backup_and_link "$AI_HOME/GLOBAL.md" "$HOME/.copilot/copilot-instructions.md"
 
 echo
 echo "==> Shared skills"
@@ -95,13 +94,11 @@ for skill in "$AI_HOME"/skills/* "$AI_HOME"/skills.local/*; do
   link_dir "$skill" "$HOME/.claude/skills/x-$name"
   link_dir "$skill" "$HOME/.gemini/config/skills/x-$name"
   link_dir "$skill" "$HOME/.agents/skills/x-$name"
-  link_dir "$skill" "$HOME/.agent/skills/x-$name"
 done
 
 prune_dangling "$HOME/.claude/skills"
 prune_dangling "$HOME/.gemini/config/skills"
 prune_dangling "$HOME/.agents/skills"
-prune_dangling "$HOME/.agent/skills"
 
 echo
 echo "==> Shared agents"

@@ -1,4 +1,21 @@
-/MONOREPO-GUIDE.md
-/TELEGRAM-BOT-GUIDE.md
+# Local-only files
+*.local.md
 /skills.local/
 /agents.local/
+.claude/settings.local.json
+
+# Secrets
+.env
+.env.*
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~

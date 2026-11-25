@@ -2,13 +2,13 @@
 
 A unified configuration system for AI coding agents, shared skills, and development workflows.
 
-Write your agent instructions, skills, and subagents once in `~/.ai`, and link them into Claude Code, Codex CLI, Antigravity (Gemini), and GitHub Copilot.
+Write your agent instructions, skills, and subagents once in `~/.ai`, and link them into Claude Code, Codex CLI, and Antigravity (Gemini).
 
 **Who it's for:** developers who use more than one AI coding agent and want the same baseline behavior in all of them without copying files between tool folders.
 
 ## Key features
 
-* **One global instruction file.** `GLOBAL.md` is linked as `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, and `copilot-instructions.md`.
+* **One global instruction file.** `GLOBAL.md` is linked as `CLAUDE.md`, `AGENTS.md`, and `GEMINI.md`.
 * **Shared skills.** 14 skills under `skills/`, covering docs lookup, test authoring, BFF authentication, design patterns, browser checks, release checks, issue tracking, codebase refactoring, and more. See [docs/skills.md](docs/skills.md).
 * **Shared subagents.** Builder, debugger, project manager, QA assistant, security reviewer, and verifier. See [docs/agents.md](docs/agents.md).
 * **Codex agent generation.** Markdown agents are converted to the TOML format Codex needs.
@@ -42,9 +42,8 @@ flowchart LR
   G -- symlink --> CL["~/.claude/CLAUDE.md"]
   G -- symlink --> CX["~/.codex/AGENTS.md"]
   G -- symlink --> GM["~/.gemini/GEMINI.md"]
-  G -- symlink --> CP["~/.copilot/copilot-instructions.md"]
 
-  S -- "symlink as x-*" --> SK["~/.claude/skills/<br/>~/.gemini/config/skills/<br/>~/.agents/skills/<br/>~/.agent/skills/"]
+  S -- "symlink as x-*" --> SK["~/.claude/skills/<br/>~/.gemini/config/skills/<br/>~/.agents/skills/"]
 
   A -- symlink --> AG["~/.claude/agents/"]
   A -- "sync-gemini-agents.sh" --> GA["~/.gemini/config/agents/*/agent.md"]
@@ -71,8 +70,7 @@ What `bootstrap.sh` sets up for each tool:
 * **Claude Code:** `~/.claude/CLAUDE.md`, `~/.claude/skills/x-*`, `~/.claude/agents/*.md`
 * **Codex CLI:** `~/.codex/AGENTS.md`, `~/.codex/agents/*.toml` (generated)
 * **Antigravity / Gemini:** `~/.gemini/GEMINI.md`, `~/.gemini/config/skills/x-*`, `~/.gemini/config/agents/*/agent.md` (generated)
-* **GitHub Copilot:** `~/.copilot/copilot-instructions.md` (global instructions only)
-* **Shared skill folders:** `~/.agents/skills/x-*` and `~/.agent/skills/x-*`
+* **Shared skill folders:** `~/.agents/skills/x-*`
 
 Requirements:
 
@@ -110,12 +108,30 @@ A healthy setup ends with `Failures: 0`. A warning usually means an optional CLI
 
 What bootstrap does with files that already exist:
 
-* **An existing `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `copilot-instructions.md`, or agent file** is moved to `<file>.backup` (or `<file>.backup.<timestamp>` if a backup exists) before the link is created.
+* **An existing `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, or agent file** is moved to `<file>.backup` (or `<file>.backup.<timestamp>` if a backup exists) before the link is created.
 * **An existing skill folder that is not a symlink** is left alone and reported as `Skip existing non-symlink`.
 * **Existing symlinks** are replaced.
 * **Dangling `~/.ai` symlinks and marked generated agent files** whose source was removed are pruned; foreign links and unmarked files are left alone.
 
 Bootstrap doesn't touch tool permissions, credentials, authentication, or other local-only settings.
+
+## Uninstall
+
+Preview what uninstall would remove or restore (nothing is written):
+
+```bash
+DRY_RUN=1 ~/.ai/scripts/uninstall.sh
+```
+
+Apply:
+
+```bash
+~/.ai/scripts/uninstall.sh
+```
+
+It removes only symlinks that point into `~/.ai` and generated agent files that carry the sync marker. Each removed item is replaced by its `<file>.backup` original, if one exists. Foreign links and unmarked files are never touched, and `~/.ai` itself is not deleted. Timestamped `<file>.backup.<timestamp>` files are left in place and listed at the end for manual review.
+
+Rollback: run `uninstall.sh` to remove the links, then run `bootstrap.sh` again to reinstall.
 
 ## Usage
 
@@ -142,6 +158,7 @@ Bootstrap doesn't touch tool permissions, credentials, authentication, or other 
 ├── scripts/
 │   ├── doctor.sh                 health check
 │   ├── test.sh                   smoke test in a throwaway home folder
+│   ├── uninstall.sh              removes links and generated agents, restores backups
 │   ├── sync-gemini-agents.sh     agents/*.md → ~/.gemini/config/agents/<name>/agent.md
 │   └── sync-codex-agents.sh      agents/*.md → ~/.codex/agents/*.toml
 └── docs/                         skill and agent reference

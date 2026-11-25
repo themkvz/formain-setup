@@ -31,7 +31,7 @@ assert_link() {
 echo "==> Dry run changes nothing"
 
 env HOME="$TEST_HOME" DRY_RUN=1 "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
-for dir in .claude .codex .gemini .copilot .agents .agent; do
+for dir in .claude .codex .gemini .agents; do
   [[ ! -e "$TEST_HOME/$dir" ]] || die "Dry run created $dir"
 done
 pass "dry run wrote nothing"
@@ -51,7 +51,6 @@ env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 assert_link "$TEST_HOME/.claude/CLAUDE.md" "$TEST_HOME/.ai/GLOBAL.md"
 assert_link "$TEST_HOME/.codex/AGENTS.md" "$TEST_HOME/.ai/GLOBAL.md"
 assert_link "$TEST_HOME/.gemini/GEMINI.md" "$TEST_HOME/.ai/GLOBAL.md"
-assert_link "$TEST_HOME/.copilot/copilot-instructions.md" "$TEST_HOME/.ai/GLOBAL.md"
 pass "global context links"
 
 [[ "$(cat "$TEST_HOME/.codex/AGENTS.md.backup")" == "old instructions" ]] || die "Backup missing"
@@ -61,7 +60,7 @@ pass "existing files backed up"
 
 for skill in "$TEST_HOME"/.ai/skills/*/; do
   name="$(basename "$skill")"
-  for dir in .claude/skills .gemini/config/skills .agents/skills .agent/skills; do
+  for dir in .claude/skills .gemini/config/skills .agents/skills; do
     assert_link "$TEST_HOME/$dir/x-$name" "$TEST_HOME/.ai/skills/$name"
   done
 done
@@ -234,7 +233,7 @@ EOF
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 
-for dir in .claude/skills .gemini/config/skills .agents/skills .agent/skills; do
+for dir in .claude/skills .gemini/config/skills .agents/skills; do
   assert_link "$TEST_HOME/$dir/x-local-only" "$TEST_HOME/.ai/skills.local/local-only"
   assert_link "$TEST_HOME/$dir/x-ask-skill" "$TEST_HOME/.ai/skills.local/ask-skill"
 done
@@ -256,7 +255,7 @@ pass "local overlays linked, synced, not pruned, and pass doctor"
 rm -rf "$TEST_HOME/.ai/skills.local" "$TEST_HOME/.ai/agents.local"
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 
-for dir in .claude/skills .gemini/config/skills .agents/skills .agent/skills; do
+for dir in .claude/skills .gemini/config/skills .agents/skills; do
   [[ ! -L "$TEST_HOME/$dir/x-local-only" ]] || die "Removed local skill not pruned from $dir"
   assert_link "$TEST_HOME/$dir/x-ask-skill" "$TEST_HOME/.ai/skills/ask-skill"
 done
@@ -265,5 +264,47 @@ done
 [[ ! -e "$TEST_HOME/.codex/agents/local-agent.toml" ]] || die "Removed local Codex agent not pruned"
 assert_link "$TEST_HOME/.claude/agents/verifier.md" "$TEST_HOME/.ai/agents/verifier.md"
 pass "local overlays pruned and base targets restored after removal"
+
+echo "==> Uninstall previews, then restores the pre-install state"
+
+mkdir -p "$TEST_HOME/elsewhere-real"
+ln -s "$TEST_HOME/elsewhere-real" "$TEST_HOME/.claude/skills/uninstall-foreign"
+echo "mine" > "$TEST_HOME/.claude/skills/uninstall-mine"
+
+before="$(find "$TEST_HOME" | sort)"
+env HOME="$TEST_HOME" DRY_RUN=1 "$TEST_HOME/.ai/scripts/uninstall.sh" >/dev/null
+[[ "$before" == "$(find "$TEST_HOME" | sort)" ]] || die "Uninstall dry run changed files"
+assert_link "$TEST_HOME/.claude/CLAUDE.md" "$TEST_HOME/.ai/GLOBAL.md"
+pass "uninstall dry run changed nothing"
+
+env HOME="$TEST_HOME" "$TEST_HOME/.ai/scripts/uninstall.sh" >/dev/null
+
+for dir in .claude/skills .claude/agents .gemini/config/skills .agents/skills .agent/skills; do
+  for link in "$TEST_HOME/$dir"/*; do
+    [[ -L "$link" ]] || continue
+    [[ "$(readlink "$link")" != "$TEST_HOME/.ai/"* ]] || die "Link into .ai remains: $link"
+  done
+done
+for file in .claude/CLAUDE.md .codex/AGENTS.md .gemini/GEMINI.md .copilot/copilot-instructions.md; do
+  [[ ! -L "$TEST_HOME/$file" ]] || die "Link remains: $TEST_HOME/$file"
+done
+
+for agent in "$TEST_HOME"/.ai/agents/*.md; do
+  agent_id="$(basename "$agent" .md)"
+  [[ "$agent_id" != builder ]] || continue
+  [[ ! -e "$TEST_HOME/.codex/agents/$agent_id.toml" ]] || die "Generated Codex agent remains: $agent_id"
+  [[ ! -e "$TEST_HOME/.gemini/config/agents/$agent_id" ]] || die "Generated Gemini agent remains: $agent_id"
+done
+
+[[ ! -L "$TEST_HOME/.codex/AGENTS.md" && "$(cat "$TEST_HOME/.codex/AGENTS.md")" == "old instructions" ]] ||
+  die "Original AGENTS.md not restored"
+[[ "$(cat "$TEST_HOME/.gemini/config/agents/builder/agent.md")" == "custom gemini builder" ]] ||
+  die "Custom Gemini builder not restored"
+[[ "$(cat "$TEST_HOME/.codex/agents/builder.toml")" == "custom codex builder" ]] ||
+  die "Custom Codex builder not restored"
+[[ -L "$TEST_HOME/.claude/skills/uninstall-foreign" ]] || die "Foreign symlink was removed"
+[[ -f "$TEST_HOME/.claude/skills/uninstall-mine" ]] || die "Unmarked file was removed"
+[[ ! -e "$TEST_HOME/.agents" ]] || die "Empty .agents folder left behind"
+pass "uninstall removes links and generated agents, restores backups, keeps foreign files"
 
 printf '\nAll %d checks passed.\n' "$CHECKS"
