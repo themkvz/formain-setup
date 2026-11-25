@@ -24,18 +24,14 @@ Readers are product managers, leads, other developers, and QA. Most of them read
 
 ## Writing rules
 
+- General style rules live in `~/.ai/skills/unslop/SKILL.md`. The rules here are specific to comments.
 - Give clear context and facts about product behavior. Leave out code details unless the reader must act on them, such as a migration, flag, or breaking API change.
 - Use short, plain words: "fix", not "implement a solution for". Standard acronyms such as DB, API, and HTTP are fine; do not invent abbreviations such as cfg, impl, or fn. Do not use arrows.
 - Cut filler, ceremony, greetings, closers, praise, emojis, and claims such as "successfully completed". Each line must add context, a fact, or a required action.
-- Fragments are fine. Omit articles only when the result is readable. Keep words such as not, never, no, only, and except, as well as exact numbers and units.
+- Fragments are fine in bullets and checklist items. Use whole sentences in description prose. Keep words such as not, never, no, only, and except, as well as exact numbers and units.
 - In `Checks`, report useful observed product behavior. Omit raw command lists and environment inventories such as `Перевірено: tests/ts/check, локальний dev server (…)`. Omit skipped or pending checks such as `Not run on a device or against the backend yet`, `Not checked on staging`, and `Не перевірено: …`. Apply this in every language, including `qa` mode. If a remaining check needs the reader's action, write it as `To check` with a reproducible action and expected result.
 - Omit branch, commit, push, deployment, delivery, readiness, and workflow status, including standalone notes such as `Not deployed` and `Not committed`. Put useful evidence or QA environment links in Notes.
 - Never include secrets, tokens, `.env` values, personal data, customer names, or internal hostnames (issue links and URLs the user gave are fine).
-- Use the real names of UI elements, flags, and commands. Use one name for each thing everywhere.
-- Be specific and give the number: not "export is slow" but "export takes 40 s for 10k rows".
-- One thought per sentence. Use active voice and short sentences.
-- Use straight quotes. No em dashes. No AI vocabulary such as crucial, enhance, leverage, robust, seamless, or delve.
-- Cut any sentence that could appear unchanged in another project's comment.
 
 ## Format
 
@@ -72,4 +68,4 @@ Illustrative example (not a claim about an actual issue):
 - To check: Export a range with an archived order. Confirm the CSV includes it.
 ```
 
-Before posting, read the final body and remove verification logs, skipped-check notes, and workflow status wherever they appear. Check that every factual claim is supported, the context and behavior are clear, checks are labeled accurately, and limits, negations, numbers, and units are intact.
+Before posting, edit the body with `~/.ai/skills/unslop/SKILL.md` (read it by path). Then read the final body and remove verification logs, skipped-check notes, and workflow status wherever they appear. Check that every factual claim is supported, the context and behavior are clear, checks are labeled accurately, and limits, negations, numbers, and units are intact.

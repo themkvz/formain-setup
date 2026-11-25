@@ -110,6 +110,10 @@ User-invoked only. Posts one concise, factual comment per tracker issue. Uses Ch
 
 Checks distinguish observed results from suggested QA steps. Empty Context, Checks, and Notes are omitted. Uses the same tracker and tool detection as `x-create-issue`; prints the comment ready to paste if no tool is available.
 
+## `x-unslop`
+
+User-invoked only. Removes AI writing patterns from issue text, comments, and other technical text without changing facts, quotes, code, or structure. Returns only the edited text, or the text unchanged when it breaks no rule. `x-create-issue` and `x-issue-comment` apply it by path before they post. Rule numbers are stable ids: 3 to 33 follow cursor pstack `unslop`, 40 and up are local.
+
 ## `x-design-patterns`
 
 Finds the design pattern that fits a concrete situation, or rejects one when a plain TypeScript feature suffices. Catalog and rationale follow refactoring.guru; examples are rewritten as idiomatic TypeScript (functions, closures, discriminated unions) with the class form noted where it earns its place.

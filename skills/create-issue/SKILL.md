@@ -35,21 +35,17 @@ Invoking this skill is the approval to create the issue. Do not ask for a draft 
    
    Omit any field you cannot justify. Ask one focused question only for a required field that nothing supplies.
 6. **Format.** Use the user's explicit format first, then the applicable tracker or repo issue template. Otherwise inspect 2–3 recent, relevant issues in the same project or team and of the same type, if available. Match the recurring title convention, language, headings and order, detail level, and acceptance criteria style. If examples vary, use the closest issue type. Copy structure only, never facts, status, people, or labels. Even when you follow a pattern or template, leave out optional sections that have no facts for this issue, such as a `Context` heading that would only repeat the title. Use the formats below only when no usable pattern is accessible. Keep required template fields; state unknown facts as unknown, or ask only when required for a valid, actionable issue. Never invent reproduction steps.
-7. **Create.** Write in the tracker's native format (Azure DevOps descriptions are HTML; Jira may need wiki markup or ADF depending on the tool). With a CLI, pass the body through a file or heredoc (`--body-file`) so newlines and backticks survive shell quoting. Before creating, check that the issue covers one problem or lists its parts separately, that a duplicate search was done (when the tool can search), that every statement is supported, that the problem and outcome are clear, that required fields are present, and that limits, negations, numbers, and units are intact.
+7. **Create.** Write in the tracker's native format (Azure DevOps descriptions are HTML; Jira may need wiki markup or ADF depending on the tool). With a CLI, pass the body through a file or heredoc (`--body-file`) so newlines and backticks survive shell quoting. Before creating, edit the title and body with `~/.ai/skills/unslop/SKILL.md` (read it by path). Then check that the issue covers one problem or lists its parts separately, that a duplicate search was done (when the tool can search), that every statement is supported, that the problem and outcome are clear, that required fields are present, and that limits, negations, numbers, and units are intact.
 8. **Report.** Return the identifier, title, and URL in one line. Then one short line listing the fields set (type, priority, assignee, estimate, labels, relations), so a wrong guess is easy to spot. If no suitable authenticated tool exists, name the MCP or CLI needed and print the final title and body ready to paste.
 
 ## Writing rules
 
+- General style rules live in `~/.ai/skills/unslop/SKILL.md`. The rules here are specific to issues.
 - Describe the known problem and desired outcome, not a claim that the work is already complete.
 - Use short, plain words: "fix", not "implement a solution for". Standard acronyms such as DB, API, and HTTP are fine; do not invent abbreviations such as cfg, impl, or fn. Do not use arrows.
 - Cut filler, ceremony, greetings, closers, and emojis. Omit branch, push, delivery, readiness, and workflow status updates.
-- Fragments are fine. Omit articles only when the result is readable. Keep words such as not, never, no, only, and except, as well as exact numbers and units.
+- Fragments are fine in bullets and checklist items. Use whole sentences in description prose. Keep words such as not, never, no, only, and except, as well as exact numbers and units.
 - Preserve safety instructions, for example: "Back up first. Then run migration: it drops the column."
-- Use the real names of symbols, flags, commands, and UI elements. Use one name for each thing everywhere.
-- Be specific and give the number: not "export is slow" but "export takes 40 s for 10k rows".
-- One thought per sentence. Use active voice and short sentences.
-- Use sentence-case headings and straight quotes. No em dashes. No AI vocabulary such as crucial, enhance, leverage, robust, seamless, or delve.
-- Cut any sentence that could appear unchanged in another project's issue.
 
 ## Fallback issue format
 

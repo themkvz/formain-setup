@@ -26,7 +26,7 @@ Routes issues, checks blockers, and keeps tracker issues in sync with the code: 
 
 Verifies an issue's change, or a changed UI behavior from a brief, in the browser, by tests, and by code. Reports Done / Missing / Differs / Not covered, posts the evidence comment, ticks verified criteria, and sets the confirmed status.
 
-Both read `skills/issue-comment/SKILL.md` (and `skills/create-issue/SKILL.md` for the project manager) by path, because those skills set `disable-model-invocation`.
+Both read `skills/issue-comment/SKILL.md` (and `skills/create-issue/SKILL.md` for the project manager) by path, because those skills set `disable-model-invocation`. Those skills read `skills/unslop/SKILL.md` by path in the same way.
 
 Claude consumes shared Markdown agent definitions directly.
 
