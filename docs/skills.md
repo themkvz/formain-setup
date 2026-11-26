@@ -213,7 +213,7 @@ User-invoked only. Generates a design system documentation board (sections DS-00
 
 ## `x-init`
 
-User-invoked only. Creates a minimal root `AGENTS.md` and a `CLAUDE.md -> AGENTS.md` symlink so Claude Code, Codex, and Antigravity share one file. Keeps only rules that are undiscoverable from code or config and needed in every session. Stops for `/x-init-cleanup` if a non-empty context file already exists, routes domain-specific rules into topic skills, and waits for `OK` before writing files.
+User-invoked only. Creates a minimal root `AGENTS.md` and a `CLAUDE.md -> AGENTS.md` symlink so Claude Code, Codex, and Antigravity share one file. Keeps only undiscoverable global rules, required verification gates, 1-line cross-cutting house constraints, and compact `[file.md](docs/...)` on-demand doc pointers, while skipping version or stack inventories, `src/` trees, and historical docs. Stops for `/x-init-cleanup` if a non-empty context file already exists, routes domain-specific rules and docs into topic skills, and waits for `OK` before writing files.
 
 ```text
 /x-init
@@ -222,7 +222,7 @@ User-invoked only. Creates a minimal root `AGENTS.md` and a `CLAUDE.md -> AGENTS
 
 ## `x-init-cleanup`
 
-User-invoked only. Audits `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, and `GEMINI.md` across seven layers in one pass. Marks discoverable lines and hardcoded paths as `CUT`, moves task-specific rules into drafted topic skills, consolidates duplicate root files into `AGENTS.md` with a `CLAUDE.md -> AGENTS.md` symlink, and waits for `OK` before editing files. Pass `--global` to include global context files.
+User-invoked only. Audits `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, and `GEMINI.md` across seven layers in one pass. Marks stack/version inventories, `src/` trees, and stale or historical docs as `CUT`, keeps required verification gates, 1-line cross-cutting house constraints, and compact `[file.md](docs/...)` on-demand doc pointers, moves task-specific rules and docs into drafted topic skills, consolidates duplicate root files (including `@AGENTS.md`-only `CLAUDE.md`) into `AGENTS.md` with a `CLAUDE.md -> AGENTS.md` symlink, and waits for `OK` before editing files. Pass `--global` to include global context files.
 
 ```text
 /x-init-cleanup
