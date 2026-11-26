@@ -2,18 +2,18 @@
 
 A unified configuration system for AI coding agents, shared skills, and development workflows.
 
-Write your agent instructions, skills, and subagents once in `~/.ai`, and link them into Claude Code, Codex CLI, and Antigravity (Gemini).
+Write your agent instructions, skills, and subagents once in this repository, and link them into Claude Code, Codex CLI, and Antigravity (Gemini).
 
 **Who it's for:** developers who use more than one AI coding agent and want the same baseline behavior in all of them without copying files between tool folders.
 
 ## Key features
 
-* **One global instruction file.** `GLOBAL.md` is linked as `CLAUDE.md`, `AGENTS.md`, and `GEMINI.md`.
+* **One global instruction file.** `GLOBAL.md` is compiled into `~/.config/formain-setup/` and linked as `CLAUDE.md`, `AGENTS.md`, and `GEMINI.md`.
 * **Shared skills.** Skills under `skills/`, covering docs lookup, test authoring, BFF authentication, design patterns, browser checks, release checks, issue tracking, codebase refactoring, and more. See [docs/skills.md](docs/skills.md).
 * **Shared subagents.** Builder, debugger, project manager, QA assistant, security reviewer, and verifier. See [docs/agents.md](docs/agents.md).
 * **Codex agent generation.** Markdown agents are converted to the TOML format Codex needs.
 * **Safe bootstrap.** A dry-run mode, plus backups of files it replaces.
-* **Health check.** `doctor.sh` checks links, skills, agents, script syntax, JSON/TOML configs, and installed CLIs.
+* **Health check.** `doctor.sh` checks the compiled setup, links, skills, agents, script syntax, JSON/TOML configs, and installed CLIs.
 * **Smoke test and CI.** `scripts/test.sh` runs bootstrap, sync, and doctor against a throwaway home folder. GitHub Actions runs it on Linux and macOS.
 
 ## SDLC coverage
@@ -33,28 +33,34 @@ Built for a solo developer or small team — covers the core delivery stages wit
 
 ```mermaid
 flowchart LR
-  subgraph repo["~/.ai (this repository)"]
+  subgraph repo["Repository (any folder)"]
     G["GLOBAL.md"]
-    S["skills/*/"]
-    A["agents/*.md"]
+    S["skills/*/ + skills.local/*/"]
+    A["agents/*.md + agents.local/*.md"]
   end
 
-  G -- symlink --> CL["~/.claude/CLAUDE.md"]
-  G -- symlink --> CX["~/.codex/AGENTS.md"]
-  G -- symlink --> GM["~/.gemini/GEMINI.md"]
+  C["~/.config/formain-setup/<br/>(compiled)"]
 
-  S -- "symlink as x-*" --> SK["~/.claude/skills/<br/>~/.gemini/config/skills/<br/>~/.agents/skills/"]
+  G -- copy --> C
+  S -- compile --> C
+  A -- compile --> C
 
-  A -- symlink --> AG["~/.claude/agents/"]
+  C -- symlink --> CL["~/.claude/CLAUDE.md"]
+  C -- symlink --> CX["~/.codex/AGENTS.md"]
+  C -- symlink --> GM["~/.gemini/GEMINI.md"]
+
+  C -- "symlink as x-*" --> SK["~/.claude/skills/<br/>~/.gemini/config/skills/<br/>~/.agents/skills/"]
+
+  C -- symlink --> AG["~/.claude/agents/"]
   A -- "sync-gemini-agents.sh" --> GA["~/.gemini/config/agents/*/agent.md"]
   A -- "sync-codex-agents.sh" --> CT["~/.codex/agents/*.toml"]
 ```
 
-`~/.ai` is the single source of truth. Tool folders hold links to it, or files generated from it. Edit a file in `~/.ai` and every linked tool sees the change.
+This repository is the source of truth. `bootstrap.sh` compiles `GLOBAL.md`, winning skills, agents, docs, and helper scripts into `~/.config/formain-setup/` and symlinks tool folders to it. Moving or deleting the Git clone never breaks your setup. Re-run `./bootstrap.sh` after editing files in the repository.
 
 ### Notable decisions
 
-* **Links, not copies.** `bootstrap.sh` creates symlinks, so there is nothing to keep in sync, except the Antigravity and Codex agents, which have to be generated.
+* **Compile once, link everywhere.** `bootstrap.sh` compiles `GLOBAL.md`, winning skills, agents, docs, and helper scripts into `~/.config/formain-setup/` and symlinks tool folders to it, so moving or deleting the Git clone never breaks your setup. Re-run `./bootstrap.sh` after editing the repository. Antigravity and Codex agents are still generated into each tool's folder.
 * **Antigravity and Codex agents are generated.** Antigravity expects native tool names in a YAML list and rejects Claude model tiers, so `scripts/sync-gemini-agents.sh` writes `~/.gemini/config/agents/<name>/agent.md`. Codex needs TOML, so `scripts/sync-codex-agents.sh` turns the description, body, and `codex-*` frontmatter keys of each `agents/*.md` into `~/.codex/agents/<name>.toml`. The sandbox defaults to `read-only` unless an agent sets `codex-sandbox`.
 * **Small global context.** `GLOBAL.md` only holds behavior useful in nearly every session: scope, evidence-first investigation, minimal changes, verification, safety, and concise communication. Framework and project knowledge lives in skills or in each project.
 * **Skills load on demand.** Most skills are user-invoked only (`disable-model-invocation: true`), so they don't use up context until you call them with `/x-<name>`.
@@ -74,7 +80,7 @@ What `bootstrap.sh` sets up for each tool:
 
 Requirements:
 
-* Bash, Git, and a system that supports symlinks. The scripts expect the repository at `~/.ai`.
+* Bash, Git, and a system that supports symlinks.
 * Optional, for `doctor.sh`: `jq` (JSON checks), and Python 3.11+ (`tomllib`, for TOML checks).
 * Optional, used by some skills: `ctx7` (Context7 CLI), `playwright-cli`, and `rtk`.
 
@@ -82,26 +88,29 @@ The scripts have been run on Linux with Bash 5.2 and on macOS with the system Ba
 
 ## Quick start
 
+Clone the repository into `~/.ai`, or any folder you prefer, then run commands from inside it:
+
 ```bash
 git clone https://github.com/themkvz/formain-setup.git ~/.ai
+cd ~/.ai
 ```
 
 Preview what bootstrap would change (nothing is written):
 
 ```bash
-DRY_RUN=1 ~/.ai/bootstrap.sh
+DRY_RUN=1 ./bootstrap.sh
 ```
 
 Apply:
 
 ```bash
-~/.ai/bootstrap.sh
+./bootstrap.sh
 ```
 
 Check the result:
 
 ```bash
-~/.ai/scripts/doctor.sh
+./scripts/doctor.sh
 ```
 
 A healthy setup ends with `Failures: 0`. A warning usually means an optional CLI isn't installed.
@@ -111,7 +120,7 @@ What bootstrap does with files that already exist:
 * **An existing `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, or agent file** is moved to `<file>.backup` (or `<file>.backup.<timestamp>` if a backup exists) before the link is created.
 * **An existing skill folder that is not a symlink** is left alone and reported as `Skip existing non-symlink`.
 * **Existing symlinks** are replaced.
-* **Dangling `~/.ai` symlinks and marked generated agent files** whose source was removed are pruned; foreign links and unmarked files are left alone.
+* **Dangling symlinks and marked generated agent files** whose source was removed are pruned; foreign links and unmarked files are left alone.
 
 Bootstrap doesn't touch tool permissions, credentials, authentication, or other local-only settings.
 
@@ -120,35 +129,36 @@ Bootstrap doesn't touch tool permissions, credentials, authentication, or other 
 Preview what uninstall would remove or restore (nothing is written):
 
 ```bash
-DRY_RUN=1 ~/.ai/scripts/uninstall.sh
+DRY_RUN=1 ./scripts/uninstall.sh
 ```
 
 Apply:
 
 ```bash
-~/.ai/scripts/uninstall.sh
+./scripts/uninstall.sh
 ```
 
-It removes only symlinks that point into `~/.ai` and generated agent files that carry the sync marker. Each removed item is replaced by its `<file>.backup` original, if one exists. Foreign links and unmarked files are never touched, and `~/.ai` itself is not deleted. Timestamped `<file>.backup.<timestamp>` files are left in place and listed at the end for manual review.
+It removes only symlinks managed by this setup, the compiled `~/.config/formain-setup/` directory, and generated agent files that carry the sync marker. Each removed item is replaced by its `<file>.backup` original, if one exists. Foreign links and unmarked files are never touched, and the repository clone is not deleted. Timestamped `<file>.backup.<timestamp>` files are left in place and listed at the end for manual review. Both `~/.config/formain-setup/scripts/doctor.sh` and `~/.config/formain-setup/scripts/uninstall.sh` work standalone even without the Git clone.
 
 Rollback: run `uninstall.sh` to remove the links, then run `bootstrap.sh` again to reinstall.
 
 ## Usage
 
-* Global instructions: edit `~/.ai/GLOBAL.md`.
+* Global instructions: edit `GLOBAL.md` in the repository and re-run `./bootstrap.sh`.
 * Skills: run a user-invoked skill with `/x-<name>`, for example `/x-ship-check` or `/x-wait-what`. Full list: [docs/skills.md](docs/skills.md).
-* Agents: after changing `agents/*.md`, regenerate the Antigravity and Codex copies:
+* Agents: after changing `agents/*.md`, regenerate the Antigravity and Codex copies (or re-run `./bootstrap.sh`):
 
   ```bash
-  ~/.ai/scripts/sync-gemini-agents.sh
-  ~/.ai/scripts/sync-codex-agents.sh
+  ./scripts/sync-gemini-agents.sh
+  ./scripts/sync-codex-agents.sh
   ```
-* Local overlays: put private or machine-specific overrides in `skills.local/<name>/SKILL.md` and `agents.local/<name>.md` (both gitignored; matching names override `skills/` and `agents/`).
+* Local overlays: put private or machine-specific overrides in `skills.local/<name>/SKILL.md` and `agents.local/<name>.md` (both gitignored; matching names override `skills/` and `agents/`), then re-run `./bootstrap.sh`.
+* Standalone scripts: `~/.config/formain-setup/scripts/doctor.sh` and `~/.config/formain-setup/scripts/uninstall.sh` work standalone even without the Git clone.
 
 ## Repository layout
 
 ```text
-~/.ai/
+formain-setup/
 ├── GLOBAL.md                     global instructions for every tool
 ├── bootstrap.sh                  creates links and generated config
 ├── agents/                       shared subagents (Markdown + frontmatter)
@@ -170,15 +180,15 @@ Rollback: run `uninstall.sh` to remove the links, then run `bootstrap.sh` again 
 CI runs syntax checks and the smoke test on Linux and macOS, and ShellCheck on Linux, for pushes to `main` and pull requests. Before committing, run the smoke test. It uses a temporary home folder and never touches your real one:
 
 ```bash
-~/.ai/scripts/test.sh
+./scripts/test.sh
 ```
 
 ```bash
-DRY_RUN=1 ~/.ai/bootstrap.sh
+DRY_RUN=1 ./bootstrap.sh
 ```
 
 ```bash
-~/.ai/scripts/doctor.sh
+./scripts/doctor.sh
 ```
 
 `doctor.sh` writes nothing outside a temporary folder that it removes. It reads your config and runs `--version`, `claude plugin list`, `rtk init --show`, and `rtk gain` for the CLIs that are installed.

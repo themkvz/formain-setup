@@ -90,21 +90,47 @@ check_dangling() {
 
 section "Shared configuration"
 
-for file in \
-  "$AI_HOME/GLOBAL.md" \
-  "$AI_HOME/bootstrap.sh"
-do
-  if [[ -f "$file" ]]; then
-    ok "$file"
-  else
-    fail "Missing: $file"
+if [[ -L "$INSTALL_DIR" ]]; then
+  fail "Legacy symlink at $INSTALL_DIR (run bootstrap.sh to compile)"
+elif ! is_managed_install "$INSTALL_DIR"; then
+  fail "Missing compiled setup: $INSTALL_DIR (run bootstrap.sh)"
+else
+  ok "$INSTALL_DIR"
+fi
+
+if [[ -f "$INSTALL_DIR/GLOBAL.md" ]]; then
+  ok "$INSTALL_DIR/GLOBAL.md"
+else
+  fail "Missing: $INSTALL_DIR/GLOBAL.md"
+fi
+
+running_from_install=0
+if [[ -d "$INSTALL_DIR" && ! -L "$INSTALL_DIR" ]] &&
+   [[ "$AI_HOME" == "$(cd "$INSTALL_DIR" 2>/dev/null && pwd -P)" ]]; then
+  running_from_install=1
+fi
+
+if (( ! running_from_install )); then
+  for file in \
+    "$AI_HOME/GLOBAL.md" \
+    "$AI_HOME/bootstrap.sh"
+  do
+    if [[ -f "$file" ]]; then
+      ok "$file"
+    else
+      fail "Missing: $file"
+    fi
+  done
+
+  if [[ -f "$INSTALL_DIR/GLOBAL.md" ]] && ! cmp -s "$AI_HOME/GLOBAL.md" "$INSTALL_DIR/GLOBAL.md"; then
+    warn "Compiled GLOBAL.md out of date (run bootstrap.sh)"
   fi
-done
+fi
 
 section "Global context links"
 
 for target in "${GLOBAL_CONTEXT_TARGETS[@]}"; do
-  check_link "$target" "$AI_HOME/GLOBAL.md"
+  check_link "$target" "$INSTALL_DIR/GLOBAL.md"
 done
 
 section "Shared skills"
@@ -126,8 +152,16 @@ check_skill() {
     fail "$name is manual-only but has no agents/openai.yaml for Codex"
   fi
 
+  if is_managed_install "$INSTALL_DIR"; then
+    if [[ ! -d "$INSTALL_DIR/skills/$name" ]]; then
+      fail "Missing compiled skill: $INSTALL_DIR/skills/$name (run bootstrap.sh)"
+    elif (( ! running_from_install )) && ! diff -rq "$skill" "$INSTALL_DIR/skills/$name" >/dev/null 2>&1; then
+      warn "Compiled skill out of date: $name (run bootstrap.sh)"
+    fi
+  fi
+
   for skill_link_dir in "${SKILL_LINK_DIRS[@]}"; do
-    check_link "$skill_link_dir/x-$name" "$skill"
+    check_link "$skill_link_dir/x-$name" "$INSTALL_DIR/skills/$name"
   done
 }
 
@@ -166,7 +200,15 @@ check_agent() {
 
   ok "$name"
 
-  check_link "$CLAUDE_AGENT_DIR/$name" "$agent"
+  if is_managed_install "$INSTALL_DIR"; then
+    if [[ ! -f "$INSTALL_DIR/agents/$name" ]]; then
+      fail "Missing compiled agent: $INSTALL_DIR/agents/$name (run bootstrap.sh)"
+    elif (( ! running_from_install )) && ! cmp -s "$agent" "$INSTALL_DIR/agents/$name"; then
+      warn "Compiled agent out of date: $name (run bootstrap.sh)"
+    fi
+  fi
+
+  check_link "$CLAUDE_AGENT_DIR/$name" "$INSTALL_DIR/agents/$name"
 
   if [[ -L "$gemini_agent" ]]; then
     fail "Gemini agent is a raw symlink: $gemini_agent"
@@ -236,7 +278,7 @@ if [[ ! -e "$PLAYWRIGHT_CONFIG" && ! -L "$PLAYWRIGHT_CONFIG" ]]; then
 elif [[ -f "$PLAYWRIGHT_CONFIG" ]] && cmp -s "$PLAYWRIGHT_CONFIG" <(playwright_config_content); then
   ok "$PLAYWRIGHT_CONFIG"
 elif grep -q 'outputDir' "$PLAYWRIGHT_CONFIG" 2>/dev/null; then
-  warn "Custom config, not managed by ~/.ai: $PLAYWRIGHT_CONFIG"
+  warn "Custom config, not managed by formain-setup: $PLAYWRIGHT_CONFIG"
 else
   warn "No outputDir in $PLAYWRIGHT_CONFIG: playwright-cli writes output into each project"
 fi

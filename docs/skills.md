@@ -160,7 +160,7 @@ The body and `references/` are a copy of the skill bundled with `@playwright/cli
 ```bash
 bun add -g @playwright/cli@latest
 src=~/.bun/install/global/node_modules/playwright-core/lib/tools/skills/playwright-cli   # path printed by playwright-cli --help
-diff -r "$src" ~/.ai/skills/playwright-cli   # review, then copy the changed upstream files
+diff -r "$src" ./skills/playwright-cli   # review, then copy the changed upstream files
 ```
 
 Keep `name: x-playwright-cli`, the local description and `allowed-tools`, and the `Local rules` section.
@@ -197,7 +197,7 @@ User-invoked only. Re-explains the last message as a smart caveman: short line, 
 
 ## `x-ask-skill`
 
-User-invoked only. Reads the current session and recommends the best-fitting skill: shared `~/.ai` skills first (including manual-only ones the agent cannot see), other installed skills only when they fit better. Returns the pick, the exact command with arguments filled from context, at most one alternative, or "no skill needed". Never runs the pick without a yes. Pass a short problem to steer it.
+User-invoked only. Reads the current session and recommends the best-fitting skill: shared `x-*` skills first (including manual-only ones the agent cannot see), other installed skills only when they fit better. Returns the pick, the exact command with arguments filled from context, at most one alternative, or "no skill needed". Never runs the pick without a yes. Pass a short problem to steer it.
 
 ```text
 /x-ask-skill

@@ -12,7 +12,11 @@ remove_item() {
   local path="$1" backup
 
   echo "Removed: $path"
-  run rm "$path"
+  if [[ -d "$path" && ! -L "$path" ]]; then
+    run rm -rf "$path"
+  else
+    run rm "$path"
+  fi
 
   if [[ -e "$path$BACKUP_SUFFIX" || -L "$path$BACKUP_SUFFIX" ]]; then
     run mv "$path$BACKUP_SUFFIX" "$path"
@@ -67,6 +71,12 @@ if [[ -f "$PLAYWRIGHT_CONFIG" ]] && cmp -s "$PLAYWRIGHT_CONFIG" <(playwright_con
   run rm "$PLAYWRIGHT_CONFIG"
 fi
 
+if [[ -L "$INSTALL_DIR" ]] || is_managed_install "$INSTALL_DIR"; then
+  echo
+  echo "==> Compiled setup"
+  remove_item "$INSTALL_DIR"
+fi
+
 for dir in \
   "${SKILL_LINK_DIRS[@]}" \
   "$CLAUDE_AGENT_DIR" \
@@ -75,7 +85,8 @@ for dir in \
   "${LEGACY_SKILL_LINK_DIRS[@]}" \
   "$HOME/.agents" \
   "$HOME/.agent" \
-  "$(dirname "$PLAYWRIGHT_CONFIG")"
+  "$(dirname "$PLAYWRIGHT_CONFIG")" \
+  "$HOME/.config"
 do
   [[ -d "$dir" && ! -L "$dir" && -z "$(ls -A "$dir")" ]] || continue
   run rmdir "$dir"

@@ -24,7 +24,7 @@ Readers are product managers, leads, other developers, and QA. Most of them read
 
 ## Writing rules
 
-- General style rules live in `~/.ai/skills/unslop/SKILL.md`. The rules here are specific to comments.
+- General style rules live in `~/.agents/skills/x-unslop/SKILL.md`. The rules here are specific to comments.
 - Give clear context and facts about product behavior. Leave out code details unless the reader must act on them, such as a migration, flag, or breaking API change.
 - Use short, plain words: "fix", not "implement a solution for". Standard acronyms such as DB, API, and HTTP are fine; do not invent abbreviations such as cfg, impl, or fn. Do not use arrows.
 - Cut filler, ceremony, greetings, closers, praise, emojis, and claims such as "successfully completed". Each line must add context, a fact, or a required action.
@@ -68,4 +68,4 @@ Illustrative example (not a claim about an actual issue):
 - To check: Export a range with an archived order. Confirm the CSV includes it.
 ```
 
-Before posting, edit the body with `~/.ai/skills/unslop/SKILL.md` (read it by path). Then read the final body and remove verification logs, skipped-check notes, and workflow status wherever they appear. Check that every factual claim is supported, the context and behavior are clear, checks are labeled accurately, and limits, negations, numbers, and units are intact.
+Before posting, edit the body with `~/.agents/skills/x-unslop/SKILL.md` (read it by path). Then read the final body and remove verification logs, skipped-check notes, and workflow status wherever they appear. Check that every factual claim is supported, the context and behavior are clear, checks are labeled accurately, and limits, negations, numbers, and units are intact.

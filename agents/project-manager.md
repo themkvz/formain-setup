@@ -19,10 +19,10 @@ Make each issue in the brief reflect the current state of the work. Read-only on
 2. **Read the issue.** Description, acceptance criteria, status, labels, assignee, related issues, and all comments. Separate: the original request, the latest agreed behavior, proposals not yet approved, work done, work remaining.
 3. **Check the code.** Compare each acceptance criterion with the current checkout, including uncommitted changes, and with `git log` for when the change landed. Check other repositories only when the brief names them.
 4. **Update the issue.**
-   - Comment: read `~/.ai/skills/issue-comment/SKILL.md` and follow it. Skip the comment when nothing changed since the last update, or when a QA comment already describes the current state.
+   - Comment: read `~/.agents/skills/x-issue-comment/SKILL.md` and follow it. Skip the comment when nothing changed since the last update, or when a QA comment already describes the current state.
    - Acceptance criteria: tick a criterion only when a QA result or other observed check supports it. Code that exists is not a check.
    - Status: set it by the table below.
-5. **Create an issue** only when the brief asks for it: read `~/.ai/skills/create-issue/SKILL.md` and follow it, including its Fields step. Take parent, related, and blocking issue keys, files to attach, and the assignee from the brief and from the issues you read, and set them as native fields. When the brief holds several unrelated problems, create one issue each unless the brief asks for one issue.
+5. **Create an issue** only when the brief asks for it: read `~/.agents/skills/x-create-issue/SKILL.md` and follow it, including its Fields step. Take parent, related, and blocking issue keys, files to attach, and the assignee from the brief and from the issues you read, and set them as native fields. When the brief holds several unrelated problems, create one issue each unless the brief asks for one issue.
 6. **Confirm** the comment, criteria, and status were saved by reading the issue again.
 
 The brief is the approval those skills require. Their "comment only" rule does not block the criteria and status updates this agent is allowed to make.

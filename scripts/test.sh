@@ -9,6 +9,8 @@ trap 'rm -rf "$TEST_HOME"' EXIT
 mkdir -p "$TEST_HOME/.ai"
 cp -R "$REPO/GLOBAL.md" "$REPO/bootstrap.sh" "$REPO/agents" "$REPO/skills" "$REPO/scripts" "$TEST_HOME/.ai/"
 
+INSTALL_DIR="$TEST_HOME/.config/formain-setup"
+
 CHECKS=0
 
 pass() {
@@ -26,6 +28,13 @@ assert_link() {
 
   [[ -L "$target" ]] || die "Not a symlink: $target"
   [[ "$(readlink "$target")" == "$expected" ]] || die "$target does not point to $expected"
+}
+
+assert_managed_install() {
+  local dir="$1"
+
+  [[ -d "$dir" && ! -L "$dir" ]] || die "Not a real directory: $dir"
+  [[ -f "$dir/.formain-managed" ]] || die "Missing .formain-managed marker in $dir"
 }
 
 echo "==> Dry run changes nothing"
@@ -47,9 +56,10 @@ env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 [[ -x "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" && -x "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" ]] ||
   die "bootstrap.sh did not make sync scripts executable"
 
-assert_link "$TEST_HOME/.claude/CLAUDE.md" "$TEST_HOME/.ai/GLOBAL.md"
-assert_link "$TEST_HOME/.codex/AGENTS.md" "$TEST_HOME/.ai/GLOBAL.md"
-assert_link "$TEST_HOME/.gemini/GEMINI.md" "$TEST_HOME/.ai/GLOBAL.md"
+assert_managed_install "$INSTALL_DIR"
+assert_link "$TEST_HOME/.claude/CLAUDE.md" "$INSTALL_DIR/GLOBAL.md"
+assert_link "$TEST_HOME/.codex/AGENTS.md" "$INSTALL_DIR/GLOBAL.md"
+assert_link "$TEST_HOME/.gemini/GEMINI.md" "$INSTALL_DIR/GLOBAL.md"
 pass "global context links"
 
 [[ "$(cat "$TEST_HOME/.codex/AGENTS.md.backup")" == "old instructions" ]] || die "Backup missing"
@@ -63,8 +73,9 @@ pass "Playwright CLI config written"
 
 for skill in "$TEST_HOME"/.ai/skills/*/; do
   name="$(basename "$skill")"
+  [[ -d "$INSTALL_DIR/skills/$name" ]] || die "Missing compiled skill: $name"
   for dir in .claude/skills .gemini/config/skills .agents/skills; do
-    assert_link "$TEST_HOME/$dir/x-$name" "$TEST_HOME/.ai/skills/$name"
+    assert_link "$TEST_HOME/$dir/x-$name" "$INSTALL_DIR/skills/$name"
   done
 done
 pass "skill links"
@@ -72,7 +83,8 @@ pass "skill links"
 for agent in "$TEST_HOME"/.ai/agents/*.md; do
   name="$(basename "$agent")"
   agent_id="${name%.md}"
-  assert_link "$TEST_HOME/.claude/agents/$name" "$agent"
+  [[ -f "$INSTALL_DIR/agents/$name" ]] || die "Missing compiled agent: $name"
+  assert_link "$TEST_HOME/.claude/agents/$name" "$INSTALL_DIR/agents/$name"
   [[ -s "$TEST_HOME/.gemini/config/agents/$agent_id/agent.md" && ! -L "$TEST_HOME/.gemini/config/agents/$agent_id/agent.md" ]] || die "Missing Gemini agent: $agent_id/agent.md"
   [[ -s "$TEST_HOME/.codex/agents/$agent_id.toml" ]] || die "Missing Codex agent: $agent_id.toml"
 done
@@ -82,7 +94,8 @@ echo "==> Bootstrap is safe to run twice"
 
 pw_before="$(cat "$pw_config")"
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
-assert_link "$TEST_HOME/.claude/CLAUDE.md" "$TEST_HOME/.ai/GLOBAL.md"
+assert_managed_install "$INSTALL_DIR"
+assert_link "$TEST_HOME/.claude/CLAUDE.md" "$INSTALL_DIR/GLOBAL.md"
 [[ "$(cat "$TEST_HOME/.codex/AGENTS.md.backup")" == "old instructions" ]] || die "Backup changed"
 [[ "$(cat "$TEST_HOME/.gemini/config/agents/builder/agent.md.backup")" == "custom gemini builder" ]] || die "Gemini backup changed"
 [[ "$(cat "$TEST_HOME/.codex/agents/builder.toml.backup")" == "custom codex builder" ]] || die "Codex backup changed"
@@ -125,10 +138,10 @@ description: "quoted"
 ---
 Body
 EOF
-if env HOME="$TEST_HOME/bad-home" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null 2>&1; then
+if env HOME="$TEST_HOME/bad-home" AI_HOME="$TEST_HOME/bad-home/.ai" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null 2>&1; then
   die "sync-codex-agents.sh accepted quoted description"
 fi
-if env HOME="$TEST_HOME/bad-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
+if env HOME="$TEST_HOME/bad-home" AI_HOME="$TEST_HOME/bad-home/.ai" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
   die "sync-gemini-agents.sh accepted quoted description"
 fi
 
@@ -137,10 +150,10 @@ cat > "$TEST_HOME/bad-fm-home/.ai/agents/nofm.md" <<'EOF'
 description: plain line without frontmatter
 Body
 EOF
-if env HOME="$TEST_HOME/bad-fm-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
+if env HOME="$TEST_HOME/bad-fm-home" AI_HOME="$TEST_HOME/bad-fm-home/.ai" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
   die "sync-gemini-agents.sh accepted missing frontmatter"
 fi
-if env HOME="$TEST_HOME/bad-fm-home" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null 2>&1; then
+if env HOME="$TEST_HOME/bad-fm-home" AI_HOME="$TEST_HOME/bad-fm-home/.ai" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null 2>&1; then
   die "sync-codex-agents.sh accepted missing frontmatter"
 fi
 
@@ -150,10 +163,10 @@ name: unclosed
 description: unclosed frontmatter
 Body
 EOF
-if env HOME="$TEST_HOME/bad-fm-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
+if env HOME="$TEST_HOME/bad-fm-home" AI_HOME="$TEST_HOME/bad-fm-home/.ai" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
   die "sync-gemini-agents.sh accepted unclosed frontmatter"
 fi
-if env HOME="$TEST_HOME/bad-fm-home" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null 2>&1; then
+if env HOME="$TEST_HOME/bad-fm-home" AI_HOME="$TEST_HOME/bad-fm-home/.ai" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null 2>&1; then
   die "sync-codex-agents.sh accepted unclosed frontmatter"
 fi
 
@@ -165,15 +178,15 @@ gemini-model: gemini-4-hydrogen-high
 ---
 Body
 EOF
-if env HOME="$TEST_HOME/bad-fm-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
+if env HOME="$TEST_HOME/bad-fm-home" AI_HOME="$TEST_HOME/bad-fm-home/.ai" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null 2>&1; then
   die "sync-gemini-agents.sh accepted invalid gemini-model"
 fi
 pass "unsupported and missing frontmatter rejected"
 
 mkdir -p "$TEST_HOME/empty-home/.ai/agents"
-env HOME="$TEST_HOME/empty-home" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null ||
+env HOME="$TEST_HOME/empty-home" AI_HOME="$TEST_HOME/empty-home/.ai" "$TEST_HOME/.ai/scripts/sync-gemini-agents.sh" >/dev/null ||
   die "sync-gemini-agents.sh failed on empty agents/"
-env HOME="$TEST_HOME/empty-home" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null ||
+env HOME="$TEST_HOME/empty-home" AI_HOME="$TEST_HOME/empty-home/.ai" "$TEST_HOME/.ai/scripts/sync-codex-agents.sh" >/dev/null ||
   die "sync-codex-agents.sh failed on empty agents/"
 pass "sync scripts succeed with empty agents/"
 
@@ -245,11 +258,15 @@ env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 
 for dir in .claude/skills .gemini/config/skills .agents/skills; do
-  assert_link "$TEST_HOME/$dir/x-local-only" "$TEST_HOME/.ai/skills.local/local-only"
-  assert_link "$TEST_HOME/$dir/x-ask-skill" "$TEST_HOME/.ai/skills.local/ask-skill"
+  assert_link "$TEST_HOME/$dir/x-local-only" "$INSTALL_DIR/skills/local-only"
+  assert_link "$TEST_HOME/$dir/x-ask-skill" "$INSTALL_DIR/skills/ask-skill"
 done
-assert_link "$TEST_HOME/.claude/agents/local-agent.md" "$TEST_HOME/.ai/agents.local/local-agent.md"
-assert_link "$TEST_HOME/.claude/agents/verifier.md" "$TEST_HOME/.ai/agents.local/verifier.md"
+grep -q 'Local override skill for testing' "$INSTALL_DIR/skills/ask-skill/SKILL.md" ||
+  die "Compiled ask-skill not overridden by skills.local"
+assert_link "$TEST_HOME/.claude/agents/local-agent.md" "$INSTALL_DIR/agents/local-agent.md"
+assert_link "$TEST_HOME/.claude/agents/verifier.md" "$INSTALL_DIR/agents/verifier.md"
+grep -q 'Local override verifier' "$INSTALL_DIR/agents/verifier.md" ||
+  die "Compiled verifier not overridden by agents.local"
 [[ -s "$TEST_HOME/.gemini/config/agents/local-agent/agent.md" && ! -L "$TEST_HOME/.gemini/config/agents/local-agent/agent.md" ]] ||
   die "Missing local Gemini agent"
 [[ -s "$TEST_HOME/.codex/agents/local-agent.toml" ]] || die "Missing local Codex agent"
@@ -261,19 +278,27 @@ grep -q 'Local override verifier' "$TEST_HOME/.codex/agents/verifier.toml" ||
 env HOME="$TEST_HOME" PATH="/usr/bin:/bin" "$TEST_HOME/.ai/scripts/doctor.sh" > "$TEST_HOME/doctor-local.log" ||
   { cat "$TEST_HOME/doctor-local.log"; die "doctor.sh failed with local overlays"; }
 grep -q '^Failures: 0$' "$TEST_HOME/doctor-local.log" || die "doctor.sh reported failures with local overlays"
-pass "local overlays linked, synced, not pruned, and pass doctor"
+pass "local overlays compiled, linked, synced, not pruned, and pass doctor"
 
 rm -rf "$TEST_HOME/.ai/skills.local" "$TEST_HOME/.ai/agents.local"
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null
 
 for dir in .claude/skills .gemini/config/skills .agents/skills; do
   [[ ! -L "$TEST_HOME/$dir/x-local-only" ]] || die "Removed local skill not pruned from $dir"
-  assert_link "$TEST_HOME/$dir/x-ask-skill" "$TEST_HOME/.ai/skills/ask-skill"
+  assert_link "$TEST_HOME/$dir/x-ask-skill" "$INSTALL_DIR/skills/ask-skill"
 done
+[[ ! -d "$INSTALL_DIR/skills/local-only" ]] || die "Removed compiled local skill not pruned"
+if grep -q 'Local override skill for testing' "$INSTALL_DIR/skills/ask-skill/SKILL.md"; then
+  die "Compiled ask-skill was not restored to base after skills.local removal"
+fi
 [[ ! -L "$TEST_HOME/.claude/agents/local-agent.md" ]] || die "Removed local Claude agent not pruned"
+[[ ! -f "$INSTALL_DIR/agents/local-agent.md" ]] || die "Removed compiled local agent not pruned"
+if grep -q 'Local override verifier' "$INSTALL_DIR/agents/verifier.md"; then
+  die "Compiled verifier was not restored to base after agents.local removal"
+fi
 [[ ! -e "$TEST_HOME/.gemini/config/agents/local-agent" ]] || die "Removed local Gemini agent not pruned"
 [[ ! -e "$TEST_HOME/.codex/agents/local-agent.toml" ]] || die "Removed local Codex agent not pruned"
-assert_link "$TEST_HOME/.claude/agents/verifier.md" "$TEST_HOME/.ai/agents/verifier.md"
+assert_link "$TEST_HOME/.claude/agents/verifier.md" "$INSTALL_DIR/agents/verifier.md"
 pass "local overlays pruned and base targets restored after removal"
 
 echo "==> Uninstall previews, then restores the pre-install state"
@@ -286,7 +311,7 @@ printf '%s\n' "<!-- Generated by ~/.ai/scripts/sync-gemini-agents.sh. Do not edi
 before="$(find "$TEST_HOME" | sort)"
 env HOME="$TEST_HOME" DRY_RUN=1 "$TEST_HOME/.ai/scripts/uninstall.sh" >/dev/null
 [[ "$before" == "$(find "$TEST_HOME" | sort)" ]] || die "Uninstall dry run changed files"
-assert_link "$TEST_HOME/.claude/CLAUDE.md" "$TEST_HOME/.ai/GLOBAL.md"
+assert_link "$TEST_HOME/.claude/CLAUDE.md" "$INSTALL_DIR/GLOBAL.md"
 pass "uninstall dry run changed nothing"
 
 env HOME="$TEST_HOME" "$TEST_HOME/.ai/scripts/uninstall.sh" >/dev/null
@@ -294,9 +319,12 @@ env HOME="$TEST_HOME" "$TEST_HOME/.ai/scripts/uninstall.sh" >/dev/null
 for dir in .claude/skills .claude/agents .gemini/config/skills .agents/skills .agent/skills; do
   for link in "$TEST_HOME/$dir"/*; do
     [[ -L "$link" ]] || continue
-    [[ "$(readlink "$link")" != "$TEST_HOME/.ai/"* ]] || die "Link into .ai remains: $link"
+    [[ "$(readlink "$link")" != "$INSTALL_DIR/"* && "$(readlink "$link")" != "$TEST_HOME/.ai/"* ]] ||
+      die "Managed link remains: $link"
   done
 done
+[[ ! -L "$INSTALL_DIR" && ! -e "$INSTALL_DIR" ]] ||
+  die "Compiled setup remains"
 for file in .claude/CLAUDE.md .codex/AGENTS.md .gemini/GEMINI.md .copilot/copilot-instructions.md; do
   [[ ! -L "$TEST_HOME/$file" ]] || die "Link remains: $TEST_HOME/$file"
 done
@@ -334,5 +362,128 @@ env HOME="$foreign_home" "$foreign_home/.ai/bootstrap.sh" >/dev/null
 env HOME="$foreign_home" "$foreign_home/.ai/scripts/uninstall.sh" >/dev/null
 [[ -f "$foreign_home/.playwright/cli.config.json" ]] || die "uninstall.sh removed foreign Playwright config"
 pass "foreign Playwright config kept"
+
+echo "==> Custom clone path with spaces survives clone deletion and standalone doctor/uninstall"
+
+CLONE_HOME="$TEST_HOME/clone-home"
+mkdir -p "$TEST_HOME/custom dir/formain-setup" "$CLONE_HOME"
+cp -R "$REPO/GLOBAL.md" "$REPO/bootstrap.sh" "$REPO/agents" "$REPO/skills" "$REPO/scripts" "$REPO/docs" \
+  "$TEST_HOME/custom dir/formain-setup/"
+mkdir -p "$TEST_HOME/custom dir/formain-setup/skills/temp-skill"
+cat > "$TEST_HOME/custom dir/formain-setup/skills/temp-skill/SKILL.md" <<'EOF'
+---
+name: x-temp-skill
+description: Temporary skill for standalone test
+---
+Body
+EOF
+
+env HOME="$CLONE_HOME" "$TEST_HOME/custom dir/formain-setup/bootstrap.sh" >/dev/null
+assert_managed_install "$CLONE_HOME/.config/formain-setup"
+[[ -f "$CLONE_HOME/.config/formain-setup/docs/skills.md" ]] || die "docs/skills.md was not compiled"
+
+rm -rf "$TEST_HOME/custom dir"
+[[ -f "$CLONE_HOME/.claude/CLAUDE.md" && -f "$CLONE_HOME/.claude/skills/x-unslop/SKILL.md" && -f "$CLONE_HOME/.claude/skills/x-temp-skill/SKILL.md" && -f "$CLONE_HOME/.claude/agents/builder.md" ]] ||
+  die "Symlinks broke after deleting Git clone"
+
+env HOME="$CLONE_HOME" PATH="/usr/bin:/bin" "$CLONE_HOME/.config/formain-setup/scripts/doctor.sh" > "$TEST_HOME/doctor-standalone.log" ||
+  { cat "$TEST_HOME/doctor-standalone.log"; die "standalone doctor.sh failed after clone deletion"; }
+grep -q '^Failures: 0$' "$TEST_HOME/doctor-standalone.log" || die "standalone doctor.sh reported failures"
+
+env HOME="$CLONE_HOME" "$CLONE_HOME/.config/formain-setup/scripts/uninstall.sh" >/dev/null
+[[ ! -L "$CLONE_HOME/.config/formain-setup" && ! -e "$CLONE_HOME/.config/formain-setup" ]] ||
+  die "Compiled setup remained after standalone uninstall"
+for file in .claude/CLAUDE.md .codex/AGENTS.md .gemini/GEMINI.md; do
+  [[ ! -L "$CLONE_HOME/$file" ]] || die "Global link remained after standalone uninstall: $file"
+done
+for dir in .claude/skills .claude/agents .gemini/config/skills .agents/skills; do
+  for link in "$CLONE_HOME/$dir"/*; do
+    [[ ! -L "$link" ]] || die "Managed link remained after standalone uninstall: $link"
+  done
+done
+pass "custom clone with spaces compiled, survived clone deletion, and passed standalone doctor/uninstall"
+
+echo "==> Doctor warns on out-of-date compiled files and clears after re-bootstrap"
+
+OOD_HOME="$TEST_HOME/ood-home"
+mkdir -p "$OOD_HOME/repo"
+cp -R "$REPO/GLOBAL.md" "$REPO/bootstrap.sh" "$REPO/agents" "$REPO/skills" "$REPO/scripts" \
+  "$OOD_HOME/repo/"
+env HOME="$OOD_HOME" "$OOD_HOME/repo/bootstrap.sh" >/dev/null
+
+printf '\n# updated\n' >> "$OOD_HOME/repo/GLOBAL.md"
+printf '\nupdated\n' >> "$OOD_HOME/repo/skills/unslop/SKILL.md"
+printf '\nupdated\n' >> "$OOD_HOME/repo/agents/builder.md"
+
+env HOME="$OOD_HOME" PATH="/usr/bin:/bin" "$OOD_HOME/repo/scripts/doctor.sh" > "$TEST_HOME/doctor-ood.log" ||
+  { cat "$TEST_HOME/doctor-ood.log"; die "doctor.sh failed when compiled setup was out of date"; }
+grep -q '^! Compiled GLOBAL.md out of date' "$TEST_HOME/doctor-ood.log" ||
+  { cat "$TEST_HOME/doctor-ood.log"; die "doctor.sh missed out-of-date GLOBAL.md"; }
+grep -q '^! Compiled skill out of date: unslop' "$TEST_HOME/doctor-ood.log" ||
+  { cat "$TEST_HOME/doctor-ood.log"; die "doctor.sh missed out-of-date skill"; }
+grep -q '^! Compiled agent out of date: builder.md' "$TEST_HOME/doctor-ood.log" ||
+  { cat "$TEST_HOME/doctor-ood.log"; die "doctor.sh missed out-of-date agent"; }
+
+env HOME="$OOD_HOME" "$OOD_HOME/repo/bootstrap.sh" >/dev/null
+env HOME="$OOD_HOME" PATH="/usr/bin:/bin" "$OOD_HOME/repo/scripts/doctor.sh" > "$TEST_HOME/doctor-refreshed.log" ||
+  { cat "$TEST_HOME/doctor-refreshed.log"; die "doctor.sh failed after re-bootstrap"; }
+if grep -q 'out of date' "$TEST_HOME/doctor-refreshed.log"; then
+  cat "$TEST_HOME/doctor-refreshed.log"
+  die "doctor.sh still warned out of date after re-bootstrap"
+fi
+grep -q '^Failures: 0$' "$TEST_HOME/doctor-refreshed.log" || die "doctor.sh reported failures after re-bootstrap"
+pass "out-of-date warnings detected and cleared on re-bootstrap"
+
+echo "==> Legacy ~/.ai and intermediate ~/.config/formain-setup symlink upgrade cleanly"
+
+UPG_HOME="$TEST_HOME/upgrade-home"
+mkdir -p "$UPG_HOME/.ai" "$UPG_HOME/.config" "$UPG_HOME/.claude/skills" "$UPG_HOME/.codex/agents" "$UPG_HOME/.gemini/config/agents/builder"
+cp -R "$REPO/GLOBAL.md" "$REPO/bootstrap.sh" "$REPO/agents" "$REPO/skills" "$REPO/scripts" \
+  "$UPG_HOME/.ai/"
+ln -s "$UPG_HOME/.ai" "$UPG_HOME/.config/formain-setup"
+ln -s "$UPG_HOME/.ai/GLOBAL.md" "$UPG_HOME/.claude/CLAUDE.md"
+ln -s "$UPG_HOME/.config/formain-setup/GLOBAL.md" "$UPG_HOME/.codex/AGENTS.md"
+ln -s "$UPG_HOME/.ai/skills/old" "$UPG_HOME/.claude/skills/x-old"
+printf '%s\n' "# Generated by ~/.ai/scripts/sync-codex-agents.sh. Do not edit." > "$UPG_HOME/.codex/agents/builder.toml"
+printf '%s\n' "<!-- Generated by ~/.ai/scripts/sync-gemini-agents.sh. Do not edit. -->" > "$UPG_HOME/.gemini/config/agents/builder/agent.md"
+
+env HOME="$UPG_HOME" "$UPG_HOME/.ai/bootstrap.sh" >/dev/null
+
+assert_managed_install "$UPG_HOME/.config/formain-setup"
+[[ -f "$UPG_HOME/.ai/GLOBAL.md" && -d "$UPG_HOME/.ai/skills/unslop" ]] ||
+  die "Source files inside ~/.ai were damaged when replacing ~/.config/formain-setup symlink"
+[[ ! -e "$UPG_HOME/.claude/CLAUDE.md.backup" ]] || die "Spurious backup created for CLAUDE.md"
+[[ ! -e "$UPG_HOME/.codex/AGENTS.md.backup" ]] || die "Spurious backup created for AGENTS.md"
+[[ ! -e "$UPG_HOME/.codex/agents/builder.toml.backup" ]] || die "Spurious backup created for builder.toml"
+[[ ! -e "$UPG_HOME/.gemini/config/agents/builder/agent.md.backup" ]] || die "Spurious backup created for Gemini builder"
+[[ ! -e "$UPG_HOME/.config/formain-setup.backup" ]] || die "Spurious backup created for formain-setup symlink"
+[[ ! -L "$UPG_HOME/.claude/skills/x-old" ]] || die "Dangling legacy skill x-old not pruned"
+
+rm -rf "$UPG_HOME/.ai"
+env HOME="$UPG_HOME" PATH="/usr/bin:/bin" "$UPG_HOME/.config/formain-setup/scripts/doctor.sh" > "$TEST_HOME/doctor-upgrade.log" ||
+  { cat "$TEST_HOME/doctor-upgrade.log"; die "standalone doctor.sh failed after upgrade and ~/.ai removal"; }
+grep -q '^Failures: 0$' "$TEST_HOME/doctor-upgrade.log" || die "doctor.sh reported failures after upgrade"
+pass "legacy and symlinked ~/.config/formain-setup upgrade succeeded cleanly"
+
+echo "==> Guards refuse to overwrite a git repo or run from inside ~/.config/formain-setup"
+
+GUARD_HOME="$TEST_HOME/guard-git-home"
+mkdir -p "$GUARD_HOME/.config/formain-setup/.git"
+echo "keep" > "$GUARD_HOME/.config/formain-setup/keep.txt"
+if env HOME="$GUARD_HOME" "$TEST_HOME/.ai/bootstrap.sh" >/dev/null 2>&1; then
+  die "bootstrap.sh overwrote git repo at INSTALL_DIR"
+fi
+[[ -d "$GUARD_HOME/.config/formain-setup/.git" && "$(cat "$GUARD_HOME/.config/formain-setup/keep.txt")" == "keep" ]] ||
+  die "bootstrap.sh modified git repo at INSTALL_DIR"
+
+GUARD_HOME2="$TEST_HOME/guard-self-home"
+mkdir -p "$GUARD_HOME2/.config/formain-setup"
+cp -R "$REPO/GLOBAL.md" "$REPO/bootstrap.sh" "$REPO/agents" "$REPO/skills" "$REPO/scripts" \
+  "$GUARD_HOME2/.config/formain-setup/"
+if env HOME="$GUARD_HOME2" "$GUARD_HOME2/.config/formain-setup/bootstrap.sh" >/dev/null 2>&1; then
+  die "bootstrap.sh ran from inside INSTALL_DIR"
+fi
+[[ -f "$GUARD_HOME2/.config/formain-setup/GLOBAL.md" ]] || die "bootstrap.sh deleted files when invoked from INSTALL_DIR"
+pass "guards refused unsafe INSTALL_DIR overwrites"
 
 printf '\nAll %d checks passed.\n' "$CHECKS"

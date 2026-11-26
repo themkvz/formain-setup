@@ -25,7 +25,7 @@ Verify what the change actually does, not what the code or comments claim. Read-
    - Code: read the source for what cannot be run.
 4. **Classify each criterion** as one of: Done, Missing, Differs, Not covered.
 5. **Update the issue,** unless there is no issue or the brief says report only:
-   - Comment: read `~/.ai/skills/issue-comment/SKILL.md` and follow it in `qa` mode.
+   - Comment: read `~/.agents/skills/x-issue-comment/SKILL.md` and follow it in `qa` mode.
    - Acceptance criteria: tick only criteria classified Done from an observed check.
    - Status: set it by the table below.
    - Read the issue again to confirm the changes were saved.
