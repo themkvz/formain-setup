@@ -44,6 +44,13 @@
 - Processes: reuse a running server, browser, or watcher instead of starting another. Prefer commands that exit; no watch mode unless the task needs it. Stop long-running processes you started once they're no longer needed.
 - Never run broad kills (`pkill node`). Kill only processes you started; ask before stopping any other.
 
+## Git commits
+
+- Use Conventional Commits: `type(scope): summary`, e.g. `feat: add feature`, `fix: resolve bug`. Scope is optional; add `!` after the type for breaking changes.
+- Title: imperative mood, lowercase, no trailing period, under 50 characters.
+- Add a body only when context is needed: a blank line after the title, then bullets on what changed and why, wrapped at 72 characters.
+- No raw diffs or code in the message.
+
 ## Delegation
 
 Delegate independent, non-trivial subtasks; keep simple ones in the main agent. Pick the cheapest model that fits and set model and effort explicitly:
