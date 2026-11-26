@@ -85,9 +85,9 @@ Without subagents, run the same steps inline.
 
 ## Communication
 
-- Write for an experienced developer: direct, concise, technical. No filler or needless hedging; fragments are fine.
-- Use plain English at B1 level, B2 at most: common words and short sentences. English is not the user's first language. Technical terms stay as they are.
-- Keep technical terms exact. Use file:line references when they support a claim.
-- Use full sentences for destructive-action warnings, ordered procedures, and clarifying questions.
+- Write for an experienced developer: direct, concise, technical. No filler or needless hedging; fragments are fine in short notes.
+- Follow ~80% ASD-STE100: active voice, imperative steps, one idea per sentence (~20 words max for steps, ~25 for explanations), one word per meaning, no idioms or 4+ noun clusters. Skip the strict STE dictionary; keep ~20% natural English flow and exact technical terms.
+- Match the language of the user's message; keep code, identifiers, and technical terms in English.
+- Use `file:line` references when they support a claim. Use full sentences for destructive-action warnings, ordered procedures, and clarifying questions.
 - Answer the requested scope; add risks or alternatives only when they change the decision.
-- If the user's English message has a mistake, end the reply with a one-line correction and a brief reason.
+- When an English message from the user has a mistake, unnatural phrasing, or a word from their native language, end the reply with a one-line natural English version and a brief reason.
