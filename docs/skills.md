@@ -210,3 +210,21 @@ User-invoked only. Generates a design system documentation board (sections DS-00
 ```text
 /x-design-system-board
 ```
+
+## `x-init`
+
+User-invoked only. Creates a minimal root `AGENTS.md` and a `CLAUDE.md -> AGENTS.md` symlink so Claude Code, Codex, and Antigravity share one file. Keeps only rules that are undiscoverable from code or config and needed in every session. Stops for `/x-init-cleanup` if a non-empty context file already exists, routes domain-specific rules into topic skills, and waits for `OK` before writing files.
+
+```text
+/x-init
+/x-init src/apps/web
+```
+
+## `x-init-cleanup`
+
+User-invoked only. Audits `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, and `GEMINI.md` across seven layers in one pass. Marks discoverable lines and hardcoded paths as `CUT`, moves task-specific rules into drafted topic skills, consolidates duplicate root files into `AGENTS.md` with a `CLAUDE.md -> AGENTS.md` symlink, and waits for `OK` before editing files. Pass `--global` to include global context files.
+
+```text
+/x-init-cleanup
+/x-init-cleanup --global
+```

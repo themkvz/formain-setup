@@ -22,7 +22,7 @@ Built for a solo developer or small team — covers the core delivery stages wit
 
 | Stage | Agents | Skills | Responsibility |
 | --- | --- | --- | --- |
-| Plan & scope | — *(main agent)* | `x-create-issue` | Clarify specs, scope work, and create issues. |
+| Plan & scope | — *(main agent)* | `x-init`, `x-init-cleanup`, `x-create-issue` | Set up or trim repo context files, clarify specs, scope work, and create issues. |
 | Track & route | `project-manager` | `x-create-issue`, `x-issue-comment`, `x-unslop` | Route issues, check blockers, keep tracker status in sync with code, post concise updates. |
 | Design | — *(main agent)* | `x-preferred-stack`, `x-design-patterns`, `x-bff-api-architecture-flow`, `x-design-system-board` | Pick stack defaults, structure code and auth flows, outline UI design tokens. |
 | Build & fix | `builder`, `debugger` | `x-bff-api-client`, `x-find-docs`, `x-write-tests`, `x-untangle-codebase` | Implement specs, find root causes, check current docs, write behavior-first tests, untangle codebase structure. |
