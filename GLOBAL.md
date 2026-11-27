@@ -44,6 +44,11 @@
 - Processes: reuse a running server, browser, or watcher instead of starting another. Prefer commands that exit; no watch mode unless the task needs it. Stop long-running processes you started once they're no longer needed.
 - Never run broad kills (`pkill node`). Kill only processes you started; ask before stopping any other.
 
+## Git branches
+
+- Use Conventional Branch names: `type/issue-short-title` (omit `issue-` when none exists), e.g. `feat/123-add-login`, `fix/PROJ-45-null-user`.
+- Use Conventional types (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`) or match the repo's prefix (`feature/`, `features/`); keep `short-title` lowercase kebab-case.
+
 ## Git commits
 
 - Use Conventional Commits: `type(scope): summary`, e.g. `feat: add feature`, `fix: resolve bug`. Scope is optional; add `!` after the type for breaking changes.
